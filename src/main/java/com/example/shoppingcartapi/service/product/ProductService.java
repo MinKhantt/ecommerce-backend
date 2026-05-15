@@ -3,164 +3,220 @@ package com.example.shoppingcartapi.service.product;
 import com.example.shoppingcartapi.dto.ProductDto;
 import com.example.shoppingcartapi.dto.request.AddProductRequest;
 import com.example.shoppingcartapi.dto.request.ProductUpdateRequest;
+import com.example.shoppingcartapi.dto.response.ProductListResponse;
 import com.example.shoppingcartapi.exception.AlreadyExistsException;
 import com.example.shoppingcartapi.exception.ResourceNotFoundException;
-import com.example.shoppingcartapi.model.Category;
-import com.example.shoppingcartapi.model.Image;
-import com.example.shoppingcartapi.model.Product;
+import com.example.shoppingcartapi.entity.Category;
+import com.example.shoppingcartapi.entity.Product;
+import com.example.shoppingcartapi.mapper.ProductMapper;
 import com.example.shoppingcartapi.repository.CategoryRepository;
-import com.example.shoppingcartapi.repository.ImageRepository;
 import com.example.shoppingcartapi.repository.ProductRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import java.util.List;
-import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ProductService implements IProductService {
+
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
-    private final ImageRepository imageRepository;
-    private final ModelMapper modelMapper;
+    private final ProductMapper productMapper;
 
     @Transactional
+    @CacheEvict(value = "productQueries", allEntries = true)
     @Override
-    public Product addProduct(AddProductRequest request) {
-        // check if the category is found in the DB
-        // if Yes, set it as the new product of category
-        // if No, the save as the new category
-        // the set as the new product category
+    public ProductDto createProduct(AddProductRequest request) {
+        log.debug("Starting product creation for name={} and brand={}", request.getName(), request.getBrand());
 
-        if(checkProductAlreadyExit(request.getName(), request.getBrand())) {
-            throw new AlreadyExistsException(request.getName() + " " + request.getBrand() + " already exit!");
+        if (productRepository.existsByNameAndBrand(request.getName(), request.getBrand())) {
+            log.debug("Product creation stopped because product already exists for name={} and brand={}",
+                    request.getName(), request.getBrand());
+            throw new AlreadyExistsException(request.getName() + " " + request.getBrand() + " already exists!");
         }
 
-        Category category = Optional.ofNullable(categoryRepository.findByName(request.getCategory()))
-                .orElseGet(()-> {
-                    Category newCategory = new Category(request.getCategory());
-                    return categoryRepository.save(newCategory);
+        // Fetch or create the category
+        Category category = categoryRepository.findByName(request.getCategory());
+        if (category == null) {
+            Category newCategory = new Category(request.getCategory());
+            category = categoryRepository.save(newCategory);
+            log.debug("Created new category with id={} and name={}", category.getId(), category.getName());
+        } else {
+            log.debug("Using existing category with id={} and name={}", category.getId(), category.getName());
+        }
+
+        Product product = productMapper.toProduct(request);
+        product.setCategory(category);
+        Product savedProduct = productRepository.save(product);
+        log.debug("Created product with id={}, name={}, brand={}, category={}",
+                savedProduct.getId(), savedProduct.getName(), savedProduct.getBrand(), category.getName());
+        return productMapper.ProductToProductDto(savedProduct);
+    }
+
+    @Cacheable(value = "productQueries", key = "'all'")
+    @Override
+    public ProductListResponse getAllProducts() {
+        log.debug("Retrieving all products");
+        List<ProductDto> products = productRepository.findAll()
+                .stream()
+                .map(productMapper::ProductToProductDto)
+                .toList();
+
+        log.debug("Retrieved {} products", products.size());
+        return new ProductListResponse(products);
+    }
+
+    @Override
+    @Cacheable(value = "products", key = "#id")
+    public ProductDto getProductById(Long id) {
+        log.debug("Looking up product by id={}", id);
+        Product product = productRepository.findById(id)
+                .orElseThrow(()-> {
+                    log.debug("Product lookup failed for id={}", id);
+                    return new ResourceNotFoundException("Product not found!");
                 });
 
-//        request.setCategory(category);
-        return  productRepository.save(createProduct(request, category));
-    }
-
-    private boolean checkProductAlreadyExit(String name, String brand) {
-        return productRepository.existsByNameAndBrand(name, brand);
-    }
-
-    private Product createProduct(AddProductRequest request, Category category) {
-        return new Product(
-                request.getName(),
-                request.getBrand(),
-                request.getPrice(),
-                request.getInventory(),
-                request.getDescription(),
-                category
-        );
-    }
-
-
-    @Override
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
-    }
-
-
-    @Override
-    public Product getProductById(Long id) {
-        return productRepository.findById(id)
-                .orElseThrow(()-> new ResourceNotFoundException("Product not found!"));
+        log.debug("Found product with id={}, name={}, brand={}", product.getId(), product.getName(), product.getBrand());
+        return productMapper.ProductToProductDto(product);
     }
 
     @Transactional
     @Override
-    public Product updateProduct(ProductUpdateRequest request, Long productId) {
-        return productRepository.findById(productId)
-                .map(existingProduct -> updateExistingProduct(existingProduct, request))
-                .map(productRepository :: save)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found!"));
-    }
+    @CachePut(value = "products", key = "#productId")
+    @CacheEvict(value = "productQueries", allEntries = true)
+    public ProductDto updateProduct(ProductUpdateRequest request, Long productId) {
 
-    private Product updateExistingProduct(Product existingProduct, ProductUpdateRequest request) {
-        existingProduct.setName(request.getName());
-        existingProduct.setBrand(request.getBrand());
-        existingProduct.setPrice(request.getPrice());
-        existingProduct.setInventory(request.getInventory());
-        existingProduct.setDescription(request.getDescription());
-
-//        Category category = categoryRepository.findByName(request.getCategory().getName());
-//        existingProduct.setName(category.getName());
-        Category category = Optional.ofNullable(categoryRepository.findByName(request.getCategory().getName()))
-                .orElseGet(() -> {
-                    Category newCategory = new Category(request.getCategory().getName());
-                    return categoryRepository.save(newCategory);
+        log.debug("Starting product update for id={}", productId);
+        Product existingProduct =  productRepository.findById(productId)
+                .orElseThrow(() -> {
+                    log.debug("Product update stopped because product id={} was not found", productId);
+                    return new ResourceNotFoundException("Product not found!");
                 });
+
+        // Fetch or create the category
+        Category category = categoryRepository.findByName(request.getCategory().getName());
+        if (category == null) {
+            Category newCategory = new Category(request.getCategory().getName());
+            category = categoryRepository.save(newCategory);
+            log.debug("Created new category with id={} and name={} during product update", category.getId(), category.getName());
+        } else {
+            log.debug("Using existing category with id={} and name={} during product update", category.getId(), category.getName());
+        }
+
+        productMapper.toUpdateProduct(request, existingProduct);
         existingProduct.setCategory(category);
-        return existingProduct;
+        Product savedProduct = productRepository.save(existingProduct);
+        log.debug("Updated product with id={}, name={}, brand={}, category={}",
+                savedProduct.getId(), savedProduct.getName(), savedProduct.getBrand(), category.getName());
+        return productMapper.ProductToProductDto(existingProduct);
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "products", key = "#productId"),
+            @CacheEvict(value = "productQueries", allEntries = true)
+    })
     @Override
-    public void deleteProductById(Long id) {
-        productRepository.findById(id)
+    public void deleteProductById(Long productId) {
+        log.debug("Starting product deletion for id={}", productId);
+        productRepository.findById(productId)
                         .ifPresentOrElse(
-                                productRepository::delete,
-                                ()-> {throw new ResourceNotFoundException("Product not found");}
+                                product -> {
+                                    productRepository.delete(product);
+                                    log.debug("Deleted product with id={}, name={}, brand={}",
+                                            product.getId(), product.getName(), product.getBrand());
+                                },
+                                ()-> {
+                                    log.debug("Product deletion stopped because product id={} was not found", productId);
+                                    throw new ResourceNotFoundException("Product not found");
+                                }
                         );
     }
 
-
     @Override
-    public List<Product> getProductsByCategory(String category) {
-        return productRepository.findByCategoryName(category);
+    @Cacheable(value = "productQueries", key = "'category:' + #category")
+    public ProductListResponse getProductsByCategory(String category) {
+        log.debug("Retrieving products by category={}", category);
+        List<ProductDto> products = productRepository.findByCategoryName(category)
+                .stream()
+                .map(productMapper::ProductToProductDto)
+                .toList();
+
+        log.debug("Retrieved {} products for category={}", products.size(), category);
+        return new ProductListResponse(products);
     }
 
-
     @Override
-    public List<Product> getProductsByBrand(String brand) {
-        return productRepository.findByBrand(brand);
+    @Cacheable(value = "productQueries", key = "'brand:' + #brand")
+    public ProductListResponse getProductsByBrand(String brand) {
+        log.debug("Retrieving products by brand={}", brand);
+        List<ProductDto> products = productRepository.findByBrand(brand)
+                .stream()
+                .map(productMapper::ProductToProductDto)
+                .toList();
+
+        log.debug("Retrieved {} products for brand={}", products.size(), brand);
+        return new ProductListResponse(products);
     }
 
-
     @Override
-    public List<Product> getProductsByCategoryAndBrand(String category, String brand) {
-        return productRepository.findByCategoryNameAndBrand(category, brand);
+    @Cacheable(value = "productQueries", key = "'category_brand:' + #category + ':' + #brand")
+    public ProductListResponse getProductsByCategoryAndBrand(String category, String brand) {
+
+        log.debug("Retrieving products by category={} and brand={}", category, brand);
+        List<ProductDto> products = productRepository.findByCategoryNameAndBrand(category, brand)
+                .stream()
+                .map(productMapper::ProductToProductDto)
+                .toList();
+
+        log.debug("Retrieved {} products for category={} and brand={}", products.size(), category, brand);
+        return new ProductListResponse(products);
     }
 
-
     @Override
-    public List<Product> getProductByName(String name) {
-        return productRepository.findByName(name);
+    @Cacheable(value = "productQueries", key = "'name:' + #name")
+    public ProductListResponse getProductByName(String name) {
+
+        log.debug("Retrieving products by name={}", name);
+        List<ProductDto> products = productRepository.findByName(name)
+                .stream()
+                .map(productMapper::ProductToProductDto)
+                .toList();
+
+        log.debug("Retrieved {} products for name={}", products.size(), name);
+        return new ProductListResponse(products);
     }
 
-
     @Override
-    public List<Product> getProductByBrandAndName(String brand, String name) {
-        return productRepository.findByBrandAndName(brand, name);
+    @Cacheable(value = "productQueries", key = "'brand_name:' + #brand + ':' + #name")
+    public ProductListResponse getProductByBrandAndName(String brand, String name) {
+
+        log.debug("Retrieving products by brand={} and name={}", brand, name);
+        List<ProductDto> products = productRepository.findByBrandAndName(brand, name)
+                .stream()
+                .map(productMapper::ProductToProductDto)
+                .toList();
+
+        log.debug("Retrieved {} products for brand={} and name={}", products.size(), brand, name);
+        return new ProductListResponse(products);
     }
 
-
     @Override
+    @Cacheable(value = "productQueries", key = "'count_brand_name:' + #brand + ':' + #name")
     public Long countProductsByBrandAndName(String brand, String name) {
-        return productRepository.countByBrandAndName(brand, name);
-    }
 
+        log.debug("Counting products by brand={} and name={}", brand, name);
+        Long count = productRepository.countByBrandAndName(brand, name);
 
-    @Override
-    public List<ProductDto> getConvertedProducts(List<Product> products) {
-        return products.stream().map(this::convertToDto).toList();
-    }
-
-
-    @Override
-    public ProductDto convertToDto(Product product) {
-        // ModelMapper will automatically map the list of images
-        // inside 'product' to the list of ImageDtos inside 'productDto'
-        return modelMapper.map(product, ProductDto.class);
+        log.debug("Counted {} products for brand={} and name={}", count, brand, name);
+        return count;
     }
 }

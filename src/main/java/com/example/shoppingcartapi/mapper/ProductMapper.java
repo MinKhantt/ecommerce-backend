@@ -1,0 +1,29 @@
+package com.example.shoppingcartapi.mapper;
+
+
+import com.example.shoppingcartapi.dto.ProductDto;
+import com.example.shoppingcartapi.dto.request.AddProductRequest;
+import com.example.shoppingcartapi.dto.request.ProductUpdateRequest;
+import com.example.shoppingcartapi.entity.Product;
+import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class ProductMapper {
+
+    private final ModelMapper modelMapper;
+
+    public Product toProduct(AddProductRequest request) {
+        return modelMapper.map(request, Product.class);
+    }
+
+    public void toUpdateProduct(ProductUpdateRequest request, Product existingProduct) {
+        modelMapper.map(request, existingProduct);
+    }
+
+    public ProductDto ProductToProductDto(Product product) {
+        return modelMapper.map(product, ProductDto.class);
+    }
+}

@@ -1,12 +1,15 @@
 package com.example.shoppingcartapi.dto;
 
-import com.example.shoppingcartapi.model.Category;
+import com.example.shoppingcartapi.entity.Category;
 import lombok.Data;
+
+import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-public class ProductDto {
+public class ProductDto implements Serializable {
     private Long id;
     private String name;
     private String brand;

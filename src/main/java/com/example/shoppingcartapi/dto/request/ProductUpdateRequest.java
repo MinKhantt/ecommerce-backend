@@ -1,6 +1,6 @@
 package com.example.shoppingcartapi.dto.request;
 
-import com.example.shoppingcartapi.model.Category;
+import com.example.shoppingcartapi.entity.Category;
 import lombok.Data;
 
 import java.math.BigDecimal;

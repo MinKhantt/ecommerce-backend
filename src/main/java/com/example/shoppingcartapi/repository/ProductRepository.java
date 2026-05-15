@@ -1,6 +1,6 @@
 package com.example.shoppingcartapi.repository;
 
-import com.example.shoppingcartapi.model.Product;
+import com.example.shoppingcartapi.entity.Product;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
