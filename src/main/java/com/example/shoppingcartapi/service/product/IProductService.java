@@ -3,26 +3,23 @@ package com.example.shoppingcartapi.service.product;
 import com.example.shoppingcartapi.dto.ProductDto;
 import com.example.shoppingcartapi.dto.request.AddProductRequest;
 import com.example.shoppingcartapi.dto.request.ProductUpdateRequest;
-import com.example.shoppingcartapi.model.Product;
+import com.example.shoppingcartapi.dto.response.ProductListResponse;
+import com.example.shoppingcartapi.entity.Product;
 
 import java.util.List;
 
 public interface IProductService {
-    Product addProduct(AddProductRequest product);
-    List<Product> getAllProducts();
-    Product getProductById(Long id);
-    Product updateProduct(ProductUpdateRequest request, Long productId);
+    ProductDto createProduct(AddProductRequest request);
+    ProductListResponse getAllProducts();
+    ProductDto getProductById(Long id);
+    ProductDto updateProduct(ProductUpdateRequest request, Long productId);
     void deleteProductById(Long id);
 
-    List<Product> getProductsByCategory(String category);
-    List<Product> getProductsByBrand(String brand);
-    List<Product> getProductsByCategoryAndBrand(String category, String brand);
-    List<Product> getProductByName(String name);
-    List<Product> getProductByBrandAndName(String brand, String name);
+    ProductListResponse getProductsByCategory(String category);
+    ProductListResponse getProductsByBrand(String brand);
+    ProductListResponse getProductsByCategoryAndBrand(String category, String brand);
+    ProductListResponse getProductByName(String name);
+    ProductListResponse getProductByBrandAndName(String brand, String name);
 
     Long countProductsByBrandAndName(String brand, String name);
-
-    List<ProductDto> getConvertedProducts(List<Product> products);
-
-    ProductDto convertToDto(Product product);
 }
