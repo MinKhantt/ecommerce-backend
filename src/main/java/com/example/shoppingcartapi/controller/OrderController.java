@@ -2,7 +2,6 @@ package com.example.shoppingcartapi.controller;
 
 import com.example.shoppingcartapi.dto.OrderDto;
 import com.example.shoppingcartapi.dto.response.ApiResponse;
-import com.example.shoppingcartapi.model.Order;
 import com.example.shoppingcartapi.service.order.IOrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

@@ -3,7 +3,7 @@ package com.example.shoppingcartapi.controller;
 import com.example.shoppingcartapi.dto.ImageDto;
 import com.example.shoppingcartapi.dto.response.ApiResponse;
 import com.example.shoppingcartapi.exception.ResourceNotFoundException;
-import com.example.shoppingcartapi.model.Image;
+import com.example.shoppingcartapi.entity.Image;
 import com.example.shoppingcartapi.service.image.IImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;

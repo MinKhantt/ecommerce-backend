@@ -1,7 +1,7 @@
 package com.example.shoppingcartapi.data;
 
-import com.example.shoppingcartapi.model.Role;
-import com.example.shoppingcartapi.model.User;
+import com.example.shoppingcartapi.entity.Role;
+import com.example.shoppingcartapi.entity.User;
 import com.example.shoppingcartapi.repository.RoleRepository;
 import com.example.shoppingcartapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

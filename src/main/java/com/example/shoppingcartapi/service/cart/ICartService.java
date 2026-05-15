@@ -1,7 +1,7 @@
 package com.example.shoppingcartapi.service.cart;
 
-import com.example.shoppingcartapi.model.Cart;
-import com.example.shoppingcartapi.model.User;
+import com.example.shoppingcartapi.entity.Cart;
+import com.example.shoppingcartapi.entity.User;
 
 import java.math.BigDecimal;
 

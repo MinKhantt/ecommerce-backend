@@ -1,7 +1,6 @@
 package com.example.shoppingcartapi.service.order;
 
 import com.example.shoppingcartapi.dto.OrderDto;
-import com.example.shoppingcartapi.model.Order;
 
 import java.util.List;
 

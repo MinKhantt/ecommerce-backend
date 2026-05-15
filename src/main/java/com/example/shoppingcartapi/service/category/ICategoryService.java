@@ -1,6 +1,6 @@
 package com.example.shoppingcartapi.service.category;
 
-import com.example.shoppingcartapi.model.Category;
+import com.example.shoppingcartapi.entity.Category;
 
 import java.util.List;
 

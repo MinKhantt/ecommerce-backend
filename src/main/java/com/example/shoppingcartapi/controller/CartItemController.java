@@ -1,21 +1,16 @@
 package com.example.shoppingcartapi.controller;
 
 
-import com.example.shoppingcartapi.dto.UserDto;
 import com.example.shoppingcartapi.dto.response.ApiResponse;
 import com.example.shoppingcartapi.exception.ResourceNotFoundException;
-import com.example.shoppingcartapi.model.Cart;
-import com.example.shoppingcartapi.model.User;
 import com.example.shoppingcartapi.service.cart.ICartItemService;
 import com.example.shoppingcartapi.service.cart.ICartService;
 import com.example.shoppingcartapi.service.user.IUserService;
-import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @RestController
 @RequiredArgsConstructor

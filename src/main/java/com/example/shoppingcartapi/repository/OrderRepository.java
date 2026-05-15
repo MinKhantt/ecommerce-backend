@@ -1,6 +1,6 @@
 package com.example.shoppingcartapi.repository;
 
-import com.example.shoppingcartapi.model.Order;
+import com.example.shoppingcartapi.entity.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

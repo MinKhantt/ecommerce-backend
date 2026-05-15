@@ -1,9 +1,9 @@
 package com.example.shoppingcartapi.service.image;
 
 import com.example.shoppingcartapi.dto.ImageDto;
+import com.example.shoppingcartapi.dto.ProductDto;
 import com.example.shoppingcartapi.exception.ResourceNotFoundException;
-import com.example.shoppingcartapi.model.Image;
-import com.example.shoppingcartapi.model.Product;
+import com.example.shoppingcartapi.entity.Image;
 import com.example.shoppingcartapi.repository.ImageRepository;
 import com.example.shoppingcartapi.service.product.IProductService;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +37,7 @@ public class ImageService implements IImageService{
 
     @Override
     public List<ImageDto> saveImage(List<MultipartFile> files, Long productId) {
-        Product product = productService.getProductById(productId);
+        ProductDto product = productService.getProductById(productId);
         List<ImageDto> savedImageDto = new ArrayList<>();
         for (MultipartFile file : files) {
             try{
@@ -45,7 +45,7 @@ public class ImageService implements IImageService{
                 image.setFileName(file.getOriginalFilename());
                 image.setFileType(file.getContentType());
                 image.setImage(new SerialBlob(file.getBytes()));
-                image.setProduct(product);
+//                image.setProduct(product);
 
                 String buildDownloadUrl = "api/v1/images/image/download/";
                 String downloadUrl = buildDownloadUrl + image.getId();

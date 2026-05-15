@@ -1,8 +1,8 @@
 package com.example.shoppingcartapi.service.cart;
 
 import com.example.shoppingcartapi.exception.ResourceNotFoundException;
-import com.example.shoppingcartapi.model.Cart;
-import com.example.shoppingcartapi.model.User;
+import com.example.shoppingcartapi.entity.Cart;
+import com.example.shoppingcartapi.entity.User;
 import com.example.shoppingcartapi.repository.CartItemRepository;
 import com.example.shoppingcartapi.repository.CartRepository;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 @RequiredArgsConstructor

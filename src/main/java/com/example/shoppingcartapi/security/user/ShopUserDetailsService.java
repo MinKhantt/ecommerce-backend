@@ -1,6 +1,6 @@
 package com.example.shoppingcartapi.security.user;
 
-import com.example.shoppingcartapi.model.User;
+import com.example.shoppingcartapi.entity.User;
 import com.example.shoppingcartapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;

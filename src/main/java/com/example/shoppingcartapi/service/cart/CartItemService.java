@@ -1,9 +1,10 @@
 package com.example.shoppingcartapi.service.cart;
 
+import com.example.shoppingcartapi.dto.ProductDto;
 import com.example.shoppingcartapi.exception.ResourceNotFoundException;
-import com.example.shoppingcartapi.model.Cart;
-import com.example.shoppingcartapi.model.CartItem;
-import com.example.shoppingcartapi.model.Product;
+import com.example.shoppingcartapi.mapper.ProductMapper;
+import com.example.shoppingcartapi.entity.Cart;
+import com.example.shoppingcartapi.entity.CartItem;
 import com.example.shoppingcartapi.repository.CartItemRepository;
 import com.example.shoppingcartapi.repository.CartRepository;
 import com.example.shoppingcartapi.service.product.IProductService;
@@ -20,6 +21,7 @@ public class CartItemService implements ICartItemService{
     private final IProductService productService;
     private final ICartService cartService;
     private final CartRepository cartRepository;
+    private final ProductMapper productMapper;
 
     @Override
     public void addItemToCart(Long cartId, Long productId, int quantity) {
@@ -30,7 +32,7 @@ public class CartItemService implements ICartItemService{
         //5. If no init the new cartItem entry
 
         Cart cart = cartService.getCart(cartId);
-        Product product = productService.getProductById(productId);
+        ProductDto product = productService.getProductById(productId);
 
         // Check if item exists
         CartItem cartItem = cart.getCartItems()
@@ -41,7 +43,7 @@ public class CartItemService implements ICartItemService{
 
         if (cartItem.getId() == null) {
             cartItem.setCart(cart);
-            cartItem.setProduct(product);
+//            cartItem.setProduct(product);
             cartItem.setQuantity(quantity);
             cartItem.setUnitPrice(product.getPrice());
         }

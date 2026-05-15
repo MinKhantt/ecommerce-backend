@@ -1,7 +1,7 @@
 package com.example.shoppingcartapi.service.image;
 
 import com.example.shoppingcartapi.dto.ImageDto;
-import com.example.shoppingcartapi.model.Image;
+import com.example.shoppingcartapi.entity.Image;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;

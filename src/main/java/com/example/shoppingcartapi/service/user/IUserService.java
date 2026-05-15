@@ -3,9 +3,7 @@ package com.example.shoppingcartapi.service.user;
 import com.example.shoppingcartapi.dto.UserDto;
 import com.example.shoppingcartapi.dto.request.CreateUserRequest;
 import com.example.shoppingcartapi.dto.request.UserUpdateRequest;
-import com.example.shoppingcartapi.model.User;
-
-import java.util.List;
+import com.example.shoppingcartapi.dto.response.UserListResponse;
 
 public interface IUserService {
 
@@ -13,7 +11,7 @@ public interface IUserService {
 
     UserDto getUserById(Long userId);
 
-    List<UserDto> getAllUsers();
+    UserListResponse getAllUsers();
 
     UserDto getUserByEmail(String email);
 

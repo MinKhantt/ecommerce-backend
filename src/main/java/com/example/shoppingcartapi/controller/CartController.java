@@ -2,7 +2,7 @@ package com.example.shoppingcartapi.controller;
 
 import com.example.shoppingcartapi.dto.response.ApiResponse;
 import com.example.shoppingcartapi.exception.ResourceNotFoundException;
-import com.example.shoppingcartapi.model.Cart;
+import com.example.shoppingcartapi.entity.Cart;
 import com.example.shoppingcartapi.service.cart.ICartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
