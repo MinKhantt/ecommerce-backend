@@ -12,19 +12,21 @@ A Spring Boot learning project I built as a student to practice building a simpl
 
 ## Tech Stack
 
-- Spring Boot 4.0.1
-- Java 25
+- Spring Boot 3.5.14
+- Java 21
 - MySQL
 - Spring Security + JJWT
 - Lombok, ModelMapper, Jakarta Validation
 
 ## Project Structure
 
+- `config/` application configuration
 - `controller/` REST endpoints
 - `service/` business logic
 - `repository/` data access
-- `model/` entities
+- `entity/` entities
 - `dto/` API contracts
+- `mapper/` entity–DTO mapping
 - `security/` JWT and security config
 - `exception/` global error handling
 
@@ -35,17 +37,17 @@ All endpoints start with `/api/v1`.
 ## Endpoints
 
 Products (`/products`)
-- `GET /products/all`
+- `GET /products`
 - `GET /products/product/{productId}`
-- `POST /products/add`
-- `PUT /products/product/{productId}/update`
-- `DELETE /products/product/{productId}/delete`
-- `GET /products/product/by/brand-and-name`
-- `GET /products/product/by/category-and-brand`
-- `GET /products/product/by-name/{name}`
-- `GET /products/product/by-brand`
-- `GET /products/product/by-category/{category}`
-- `GET /products/product/count/by/brand-and-name`
+- `POST /products`
+- `PUT /products/product/{productId}`
+- `DELETE /products/product/{productId}`
+- `GET /products/by-brand-and-name`
+- `GET /products/by-category-and-brand`
+- `GET /products/by-name`
+- `GET /products/by-brand`
+- `GET /products/by-category`
+- `GET /products/count/by-brand-and-name`
 
 Categories (`/categories`)
 - `GET /categories/all`
@@ -77,10 +79,11 @@ Orders (`/orders`)
 - `GET /orders/{userId}/order`
 
 Users (`/users`)
-- `GET /users/{userId}/user`
-- `POST /users/create`
-- `PUT /users/{userId}/update`
-- `DELETE /users/{userId}/delete`
+- `GET /users/{userId}`
+- `POST /users`
+- `PUT /users/{userId}`
+- `DELETE /users/{userId}
+- `GET /users/by-email
 
 Auth (`/auths`)
 - `POST /auths/register`
@@ -102,4 +105,5 @@ Run the app
 
 ## Notes
 
-This is a student learning project. I plan to add unit tests and Swagger/OpenAPI docs next.
+This is my Spring Boot learning project.
+I plan to add unit tests and Swagger/OpenAPI docs next.
