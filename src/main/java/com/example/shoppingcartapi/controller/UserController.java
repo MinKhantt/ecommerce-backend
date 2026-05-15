@@ -4,6 +4,7 @@ import com.example.shoppingcartapi.dto.UserDto;
 import com.example.shoppingcartapi.dto.request.CreateUserRequest;
 import com.example.shoppingcartapi.dto.request.UserUpdateRequest;
 import com.example.shoppingcartapi.dto.response.ApiResponse;
+import com.example.shoppingcartapi.dto.response.UserListResponse;
 import com.example.shoppingcartapi.service.user.IUserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,8 +35,8 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<ApiResponse> getAllUsers() {
-        List<UserDto> userDto = userService.getAllUsers();
-        return ResponseEntity.ok(new ApiResponse("User fetched successfully", userDto));
+        UserListResponse userListResponse = userService.getAllUsers();
+        return ResponseEntity.ok(new ApiResponse("User fetched successfully", userListResponse));
     }
 
     @GetMapping("/by-email")

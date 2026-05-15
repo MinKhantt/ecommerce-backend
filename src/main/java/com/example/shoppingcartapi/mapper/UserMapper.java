@@ -3,7 +3,7 @@ package com.example.shoppingcartapi.mapper;
 import com.example.shoppingcartapi.dto.UserDto;
 import com.example.shoppingcartapi.dto.request.CreateUserRequest;
 import com.example.shoppingcartapi.dto.request.UserUpdateRequest;
-import com.example.shoppingcartapi.model.User;
+import com.example.shoppingcartapi.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
