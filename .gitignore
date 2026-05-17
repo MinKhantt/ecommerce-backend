@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Enviorments Variable ###
+.env
+.env.prod
