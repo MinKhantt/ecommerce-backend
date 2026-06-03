@@ -4,10 +4,12 @@ import com.example.shoppingcartapi.dto.UserDto;
 import com.example.shoppingcartapi.dto.request.CreateUserRequest;
 import com.example.shoppingcartapi.dto.request.UserUpdateRequest;
 import com.example.shoppingcartapi.dto.response.UserListResponse;
+import com.example.shoppingcartapi.entity.Role;
 import com.example.shoppingcartapi.exception.AlreadyExistsException;
 import com.example.shoppingcartapi.exception.ResourceNotFoundException;
 import com.example.shoppingcartapi.mapper.UserMapper;
 import com.example.shoppingcartapi.entity.User;
+import com.example.shoppingcartapi.repository.RoleRepository;
 import com.example.shoppingcartapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -33,6 +36,7 @@ public class UserService implements IUserService{
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
 
     @Transactional
     @CacheEvict(value = "users", key = "'all_users'")
@@ -48,6 +52,8 @@ public class UserService implements IUserService{
 
         User user = userMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+        Role role = roleRepository.findByName("ROLE_USER");
+        user.setRoles(Set.of(role));
         userRepository.save(user);
         log.info("created user with email: {}", request.getEmail());
         return userMapper.userToUserDto(user);
