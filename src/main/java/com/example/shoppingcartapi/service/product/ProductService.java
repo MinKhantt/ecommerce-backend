@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -76,7 +77,7 @@ public class ProductService implements IProductService {
 
     @Override
     @Cacheable(value = "products", key = "#id")
-    public ProductDto getProductById(Long id) {
+    public ProductDto getProductById(UUID id) {
         log.debug("Looking up product by id={}", id);
         Product product = productRepository.findById(id)
                 .orElseThrow(()-> {
@@ -92,7 +93,7 @@ public class ProductService implements IProductService {
     @Override
     @CachePut(value = "products", key = "#productId")
     @CacheEvict(value = "productQueries", allEntries = true)
-    public ProductDto updateProduct(ProductUpdateRequest request, Long productId) {
+    public ProductDto updateProduct(ProductUpdateRequest request, UUID productId) {
 
         log.debug("Starting product update for id={}", productId);
         Product existingProduct =  productRepository.findById(productId)
@@ -125,7 +126,7 @@ public class ProductService implements IProductService {
             @CacheEvict(value = "productQueries", allEntries = true)
     })
     @Override
-    public void deleteProductById(Long productId) {
+    public void deleteProductById(UUID productId) {
         log.debug("Starting product deletion for id={}", productId);
         productRepository.findById(productId)
                         .ifPresentOrElse(

@@ -2,9 +2,11 @@ package com.example.shoppingcartapi.dto;
 
 import lombok.Data;
 
+import java.util.UUID;
+
 @Data
 public class ImageDto {
-    private Long imageId;
+    private UUID imageId;
     private String fileName;
     private String downloadUrl;
 }

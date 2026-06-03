@@ -12,6 +12,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
@@ -20,7 +21,7 @@ import java.util.stream.Collectors;
 @Setter
 public class ShopUserDetails implements UserDetails {
 
-    private Long id;
+    private UUID id;
     private String email;
     private String password;
     private Collection<GrantedAuthority> authorities;

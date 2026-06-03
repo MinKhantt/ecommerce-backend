@@ -3,6 +3,8 @@ package com.example.shoppingcartapi.repository;
 import com.example.shoppingcartapi.entity.Cart;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface CartRepository extends JpaRepository<Cart, Long> {
-    Cart findByUserId(Long userId);;
+import java.util.UUID;
+
+public interface CartRepository extends JpaRepository<Cart, UUID> {
+    Cart findByUserId(UUID userId);
 }

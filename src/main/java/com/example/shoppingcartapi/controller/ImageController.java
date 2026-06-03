@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.UUID;
+
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
@@ -27,7 +29,7 @@ public class ImageController {
     @PostMapping("/upload")
     public ResponseEntity<ApiResponse> saveImage(
             @RequestParam List<MultipartFile> file,
-            @RequestParam Long productId
+            @RequestParam UUID productId
     ) {
         try {
             List<ImageDto> imageDtos = imageService.saveImage(file, productId);
@@ -39,7 +41,7 @@ public class ImageController {
     }
 
     @GetMapping("/download/{imageId}")
-    public ResponseEntity<Resource> downloadImage(@PathVariable Long imageId) throws SQLException {
+    public ResponseEntity<Resource> downloadImage(@PathVariable UUID imageId) throws SQLException {
         Image image = imageService.getImageById(imageId);
         ByteArrayResource resource = new ByteArrayResource(image.getImage().getBytes(1, (int) image.getImage().length()));
         return ResponseEntity.ok().contentType(MediaType.parseMediaType(image.getFileType()))
@@ -49,7 +51,7 @@ public class ImageController {
 
     @PutMapping("/{imageId}")
     public ResponseEntity<ApiResponse> updateImage(
-            @PathVariable Long imageId,
+            @PathVariable UUID imageId,
             @RequestBody MultipartFile file
     ) {
         try {
@@ -69,7 +71,7 @@ public class ImageController {
 
     @DeleteMapping("/{imageId}")
     public ResponseEntity<ApiResponse> deleteImage(
-            @PathVariable Long imageId
+            @PathVariable UUID imageId
     ) {
         try {
             Image image = imageService.getImageById(imageId);

@@ -5,13 +5,14 @@ import com.example.shoppingcartapi.entity.Image;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface IImageService {
-    Image getImageById(Long id);
+    Image getImageById(UUID id);
 
-    void deleteImageById(Long id);
+    void deleteImageById(UUID id);
 
-    List<ImageDto> saveImage(List<MultipartFile> files, Long productId);
+    List<ImageDto> saveImage(List<MultipartFile> files, UUID productId);
 
-    void updateImage(MultipartFile file, Long imageId);
+    void updateImage(MultipartFile file, UUID imageId);
 }

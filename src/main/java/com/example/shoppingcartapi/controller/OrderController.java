@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -16,7 +17,7 @@ public class OrderController {
     private final IOrderService orderService;
 
     @PostMapping("/")
-    public ResponseEntity<ApiResponse> createOrder(@RequestParam Long userId) {
+    public ResponseEntity<ApiResponse> createOrder(@RequestParam UUID userId) {
         try {
             OrderDto order = orderService.placeOrder(userId);
             return ResponseEntity.ok(new ApiResponse("Item order success", order));
@@ -27,7 +28,7 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}")
-    public ResponseEntity<ApiResponse> getOrderById(@PathVariable Long orderId) {
+    public ResponseEntity<ApiResponse> getOrderById(@PathVariable UUID orderId) {
         try {
             OrderDto order = orderService.getOrder(orderId);
             return ResponseEntity.ok(new ApiResponse("Item order success", order));
@@ -38,7 +39,7 @@ public class OrderController {
     }
 
     @GetMapping("/{userId}/order")
-    public ResponseEntity<ApiResponse> getUserOrder(@PathVariable Long userId) {
+    public ResponseEntity<ApiResponse> getUserOrder(@PathVariable UUID userId) {
         try {
             List<OrderDto> order = orderService.getUserOrders(userId);
             return ResponseEntity.ok(new ApiResponse("Item order success", order));

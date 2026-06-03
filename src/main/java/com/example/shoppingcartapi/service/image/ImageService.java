@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -22,13 +23,13 @@ public class ImageService implements IImageService{
     private final IProductService productService;
 
     @Override
-    public Image getImageById(Long id) {
+    public Image getImageById(UUID id) {
         return imageRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No image found with id: " + id));
     }
 
     @Override
-    public void deleteImageById(Long id) {
+    public void deleteImageById(UUID id) {
         imageRepository.findById(id)
                 .ifPresentOrElse(imageRepository::delete, () -> {
                     throw new ResourceNotFoundException("No image found with id: " + id);
@@ -36,7 +37,7 @@ public class ImageService implements IImageService{
     }
 
     @Override
-    public List<ImageDto> saveImage(List<MultipartFile> files, Long productId) {
+    public List<ImageDto> saveImage(List<MultipartFile> files, UUID productId) {
         ProductDto product = productService.getProductById(productId);
         List<ImageDto> savedImageDto = new ArrayList<>();
         for (MultipartFile file : files) {
@@ -68,7 +69,7 @@ public class ImageService implements IImageService{
     }
 
     @Override
-    public void updateImage(MultipartFile file, Long imageId) {
+    public void updateImage(MultipartFile file, UUID imageId) {
         Image image = getImageById(imageId);
 
         try {

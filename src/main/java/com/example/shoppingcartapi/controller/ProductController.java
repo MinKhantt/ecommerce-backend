@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.UUID;
 
 import static org.springframework.http.HttpStatus.*;
 
@@ -33,7 +34,7 @@ public class ProductController {
     }
 
     @GetMapping("/product/{productId}")
-    public ResponseEntity<ApiResponse> getProductById(@PathVariable Long productId) {
+    public ResponseEntity<ApiResponse> getProductById(@PathVariable UUID productId) {
         try {
             log.info("Fetching product with id: {}", productId);
             ProductDto productDto = productService.getProductById(productId);
@@ -63,7 +64,7 @@ public class ProductController {
     @PutMapping("/product/{productId}")
     public ResponseEntity<ApiResponse> updateProduct(
             @RequestBody ProductUpdateRequest request,
-            @PathVariable Long productId
+            @PathVariable UUID productId
     ) {
         try {
             log.info("Updating product with id {}", productId);
@@ -79,7 +80,7 @@ public class ProductController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/product/{productId}")
     public ResponseEntity<ApiResponse> deleteProduct(
-            @PathVariable Long productId
+            @PathVariable UUID productId
     ) {
         try {
             log.info("Deleting product with id {}", productId);

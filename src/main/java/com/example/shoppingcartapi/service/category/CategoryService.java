@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -15,7 +16,7 @@ public class CategoryService implements ICategoryService{
     private final CategoryRepository categoryRepository;
 
     @Override
-    public Category getCategoryById(Long id) {
+    public Category getCategoryById(UUID id) {
         return categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category Not Found!"));
     }
@@ -38,7 +39,7 @@ public class CategoryService implements ICategoryService{
     }
 
     @Override
-    public Category updateCategory(Category category, Long id) {
+    public Category updateCategory(Category category, UUID id) {
         return Optional.ofNullable(getCategoryById(id)).map(oldCategory -> {
             oldCategory.setName(category.getName());
             return categoryRepository.save(oldCategory);
@@ -46,7 +47,7 @@ public class CategoryService implements ICategoryService{
     }
 
     @Override
-    public void deleteCategoryById(Long id) {
+    public void deleteCategoryById(UUID id) {
         categoryRepository.findById(id)
                 .ifPresentOrElse(categoryRepository::delete, () -> {
                     throw new ResourceNotFoundException("Category not found!");

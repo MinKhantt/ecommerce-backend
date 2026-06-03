@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.springframework.http.HttpStatus.*;
 
@@ -42,7 +43,7 @@ public class CategoryController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse> getCategoryById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse> getCategoryById(@PathVariable UUID id) {
         try {
             Category theCategory = categoryService.getCategoryById(id);
             return ResponseEntity.ok(new ApiResponse("Find!", theCategory));
@@ -64,7 +65,7 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse> deleteCategoryById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse> deleteCategoryById(@PathVariable UUID id) {
         try {
             categoryService.deleteCategoryById(id);
             return ResponseEntity.ok(new ApiResponse("Delete Success", null));
@@ -76,7 +77,7 @@ public class CategoryController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse> updateCategoryById(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @RequestBody Category category
     ) {
         try {

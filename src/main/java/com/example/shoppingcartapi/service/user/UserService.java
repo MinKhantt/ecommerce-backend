@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -54,7 +55,7 @@ public class UserService implements IUserService{
 
     @Cacheable(value = "users", key = "#userId")
     @Override
-    public UserDto getUserById(Long userId) {
+    public UserDto getUserById(UUID userId) {
         log.info("Fetching user by id: {}", userId);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User " + userId + " not found!"));
@@ -87,7 +88,7 @@ public class UserService implements IUserService{
     @CachePut(value = "users", key = "#userId")
     @CacheEvict(value = "users", key = "'all_users'")
     @Override
-    public UserDto updateUser(UserUpdateRequest request, long userId) {
+    public UserDto updateUser(UserUpdateRequest request, UUID userId) {
         log.info("Updating user with id: {}", userId);
         User existingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User " + userId + " not found!"));
@@ -103,7 +104,7 @@ public class UserService implements IUserService{
             @CacheEvict(value = "users", key = "'all_users'")
     })
     @Override
-    public void deleteUser(Long userId) {
+    public void deleteUser(UUID userId) {
         log.info("Deleting user with id: {}", userId);
         userRepository.findById(userId)
                         .ifPresentOrElse(userRepository :: delete, () -> {

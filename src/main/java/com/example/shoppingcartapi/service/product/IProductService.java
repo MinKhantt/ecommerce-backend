@@ -7,13 +7,14 @@ import com.example.shoppingcartapi.dto.response.ProductListResponse;
 import com.example.shoppingcartapi.entity.Product;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface IProductService {
     ProductDto createProduct(AddProductRequest request);
     ProductListResponse getAllProducts();
-    ProductDto getProductById(Long id);
-    ProductDto updateProduct(ProductUpdateRequest request, Long productId);
-    void deleteProductById(Long id);
+    ProductDto getProductById(UUID id);
+    ProductDto updateProduct(ProductUpdateRequest request, UUID productId);
+    void deleteProductById(UUID id);
 
     ProductListResponse getProductsByCategory(String category);
     ProductListResponse getProductsByBrand(String brand);

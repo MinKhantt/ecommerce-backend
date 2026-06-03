@@ -3,10 +3,11 @@ package com.example.shoppingcartapi.service.category;
 import com.example.shoppingcartapi.entity.Category;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface ICategoryService {
 
-    Category getCategoryById(Long id);
+    Category getCategoryById(UUID id);
 
     Category getCategoryByName(String name);
 
@@ -14,9 +15,9 @@ public interface ICategoryService {
 
     Category addCategory(Category category);
 
-    Category updateCategory(Category category, Long id);
+    Category updateCategory(Category category, UUID id);
 
-    void  deleteCategoryById(Long id);
+    void  deleteCategoryById(UUID id);
 
 
 }

@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
@@ -20,7 +21,7 @@ public class CartController {
     private final ICartService cartService;
 
     @GetMapping("/")
-    public ResponseEntity<ApiResponse> getCart(@PathVariable Long cartId) {
+    public ResponseEntity<ApiResponse> getCart(@PathVariable UUID cartId) {
         try {
             Cart cart = cartService.getCart(cartId);
             return ResponseEntity.ok(new ApiResponse("success", cart));
@@ -31,7 +32,7 @@ public class CartController {
     }
 
     @DeleteMapping("/{cartId}")
-    public ResponseEntity<ApiResponse> clearCart(@PathVariable Long cartId) {
+    public ResponseEntity<ApiResponse> clearCart(@PathVariable UUID cartId) {
         try {
             cartService.clearCart(cartId);
             return ResponseEntity.ok(new ApiResponse("Clear cart success", null));
@@ -42,7 +43,7 @@ public class CartController {
     }
 
     @GetMapping("/{cartId}/total-price")
-    public ResponseEntity<ApiResponse> getTotalAmount(@PathVariable Long cartId) {
+    public ResponseEntity<ApiResponse> getTotalAmount(@PathVariable UUID cartId) {
         try {
             BigDecimal totalPrice = cartService.getTotalPrice(cartId);
             return ResponseEntity.ok(new ApiResponse("Total Price", totalPrice));

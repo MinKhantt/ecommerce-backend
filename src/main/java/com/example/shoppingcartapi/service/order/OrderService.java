@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +31,7 @@ public class OrderService implements IOrderService{
     private final ModelMapper modelMapper;
 
     @Override
-    public OrderDto placeOrder(Long userId) {
+    public OrderDto placeOrder(UUID userId) {
         Cart cart = cartService.getCartByUserId(userId);
 
         Order order = createOrder(cart);
@@ -81,14 +82,14 @@ public class OrderService implements IOrderService{
     }
 
     @Override
-    public OrderDto getOrder(Long orderId) {
+    public OrderDto getOrder(UUID orderId) {
         return orderRepository.findById(orderId)
                 .map(this :: convertToDto)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
     }
 
     @Override
-    public List<OrderDto> getUserOrders(Long userId) {
+    public List<OrderDto> getUserOrders(UUID userId) {
         List<Order> orders = orderRepository.findByUserId(userId);
         return  orders.stream().map(this :: convertToDto).toList();
     }

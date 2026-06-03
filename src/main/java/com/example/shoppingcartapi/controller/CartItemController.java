@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @RestController
@@ -22,7 +24,7 @@ public class CartItemController {
 
 //    @PostMapping("/item/add")
 //    public ResponseEntity<ApiResponse> addItemToCart(
-//            @RequestParam Long productId,
+//            @RequestParam UUID productId,
 //            @RequestParam Integer quantity
 //    ) {
 //        try {
@@ -43,8 +45,8 @@ public class CartItemController {
 
     @DeleteMapping("/cart/{cartId}/item/{itemId}/remove")
     public ResponseEntity<ApiResponse> removeItemFromCart(
-            @PathVariable Long cartId,
-            @PathVariable Long itemId
+            @PathVariable UUID cartId,
+            @PathVariable UUID itemId
     ) {
         try {
             cartItemService.removeItemFromCart(cartId, itemId);
@@ -57,8 +59,8 @@ public class CartItemController {
 
     @PutMapping("/cart/{cartId}/item/{itemId}/update")
     public ResponseEntity<ApiResponse> updateItemQuantity(
-            @PathVariable Long cartId,
-            @PathVariable Long itemId,
+            @PathVariable UUID cartId,
+            @PathVariable UUID itemId,
             @RequestParam Integer quantity
     ) {
         try {

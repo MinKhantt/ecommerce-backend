@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -24,7 +26,7 @@ public class CartItemService implements ICartItemService{
     private final ProductMapper productMapper;
 
     @Override
-    public void addItemToCart(Long cartId, Long productId, int quantity) {
+    public void addItemToCart(UUID cartId, UUID productId, int quantity) {
         //1. Get the cart
         //2. Get the product
         //3. Check if product already exist in cart
@@ -58,7 +60,7 @@ public class CartItemService implements ICartItemService{
     }
 
     @Override
-    public void updateItemQuantity(Long cartId, Long productId, int quantity) {
+    public void updateItemQuantity(UUID cartId, UUID productId, int quantity) {
         Cart cart = cartService.getCart(cartId);
         cart.getCartItems()
                 .stream()
@@ -75,7 +77,7 @@ public class CartItemService implements ICartItemService{
     }
 
     @Override
-    public void removeItemFromCart(Long cartId, Long productId) {
+    public void removeItemFromCart(UUID cartId, UUID productId) {
         Cart cart = cartService.getCart(cartId);
         CartItem itemToRemove = getCartItem(cartId, productId);
         cart.removeItem(itemToRemove);
@@ -83,7 +85,7 @@ public class CartItemService implements ICartItemService{
     }
 
     @Override
-    public CartItem getCartItem(Long cartId, Long productId) {
+    public CartItem getCartItem(UUID cartId, UUID productId) {
         Cart cart = cartService.getCart(cartId);
         return cart.getCartItems()
                 .stream()

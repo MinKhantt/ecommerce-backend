@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -20,7 +21,7 @@ public class CartService implements ICartService{
     private final CartItemRepository cartItemRepository;
 
     @Override
-    public Cart getCart(Long id) {
+    public Cart getCart(UUID id) {
         Cart cart = cartRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found!"));
 
@@ -30,7 +31,7 @@ public class CartService implements ICartService{
     }
 
     @Override
-    public void clearCart(Long id) {
+    public void clearCart(UUID id) {
         Cart cart = getCart(id);
         cartItemRepository.deleteAllByCartId(id);
         cart.getCartItems().clear();
@@ -38,7 +39,7 @@ public class CartService implements ICartService{
     }
 
     @Override
-    public BigDecimal getTotalPrice(Long id) {
+    public BigDecimal getTotalPrice(UUID id) {
         Cart cart = getCart(id);
         return cart.getTotalAmount();
     }
@@ -55,7 +56,7 @@ public class CartService implements ICartService{
     }
 
     @Override
-    public Cart getCartByUserId(Long userId) {
+    public Cart getCartByUserId(UUID userId) {
         return cartRepository.findByUserId(userId);
     }
 }
