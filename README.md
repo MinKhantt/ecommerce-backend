@@ -1,10 +1,10 @@
 # Shopping Cart API
 
-A Spring Boot learning project I built as a student to practice building a simple eCommerce backend. It covers authentication, products, categories, carts, orders, and image uploads with a clean layered structure.
+A Spring Boot learning project I built as a student to practice building a simple eCommerce backend. It covers authentication, products, categories, carts, orders and image uploads with a clean layered structure.
 
 ## What I Practiced
 
-- Spring Security with JWT (stateless auth)
+- Spring Security with JWT (stateless auth) & OAuth2
 - JPA/Hibernate relationships and repositories
 - DTOs and request/response models
 - Validation and global exception handling
@@ -14,8 +14,11 @@ A Spring Boot learning project I built as a student to practice building a simpl
 
 - Spring Boot 3.5.14
 - Java 21
-- MySQL
+- Postgres
 - Spring Security + JJWT
+- OAuth2
+- Redis
+- Cloudinary
 - Lombok, ModelMapper, Jakarta Validation
 
 ## Project Structure
@@ -50,18 +53,19 @@ Products (`/products`)
 - `GET /products/count/by-brand-and-name`
 
 Categories (`/categories`)
-- `GET /categories/all`
-- `POST /categories/add`
-- `GET /categories/category/{id}/category`
-- `GET /categories/category/{name}/category`
-- `DELETE /categories/category/{id}/delete`
-- `PUT /categories/category/{id}/update`
+- `GET /categories`
+- `POST /categories`
+- `GET /categories/{id}`
+- `GET /categories/name/{name}`
+- `DELETE /categories/{id}`
+- `PUT /categories/{id}`
 
 Images (`/images`)
 - `POST /images/upload`
-- `GET /images/image/download/{imageId}`
-- `PUT /images/image/{imageId}/update`
-- `DELETE /images/image/{imageId}/delete`
+- `GET /images/view/{imageId}`
+- `GET /images/download/{imageId}`
+- `PUT /images/{imageId}`
+- `DELETE /images/{imageId}`
 
 Carts (`/carts`)
 - `GET /carts/{cartId}/my-cart`
@@ -93,10 +97,10 @@ Auth (`/auths`)
 
 Prerequisites
 - JDK 25
-- MySQL
+- Postgres
 
 Configure database
-- Edit `src/main/resources/application.properties` with your MySQL URL, username, and password.
+- Edit `src/main/resources/application.properties` with your Postgres URL, username, and password.
 
 Run the app
 ```bash
