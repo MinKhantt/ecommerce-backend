@@ -84,10 +84,10 @@ public class UserService implements IUserService{
     @Override
     public UserDto getUserByEmail(String email) {
         log.info("Fetching user by email: {}", email);
-        User user = Optional.ofNullable(userRepository.findByEmail(email))
+        Optional<User> user = Optional.ofNullable(userRepository.findByEmail(email))
                 .orElseThrow(() -> new ResourceNotFoundException("User With Email: " + email + " not found!"));
 
-        return userMapper.userToUserDto(user);
+        return userMapper.userToUserDto(user.orElse(null));
     }
 
     @Transactional
@@ -123,9 +123,9 @@ public class UserService implements IUserService{
         log.info("Authenticating user");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
-        User user = Optional.ofNullable(userRepository.findByEmail(email))
+        Optional<User> user = Optional.ofNullable(userRepository.findByEmail(email))
                 .orElseThrow(() -> new ResourceNotFoundException("Authenticated user not found"));
 
-        return userMapper.userToUserDto(user);
+        return userMapper.userToUserDto(user.orElse(null));
     }
 }
