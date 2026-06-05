@@ -23,6 +23,10 @@ public class ProductMapper {
         modelMapper.map(request, existingProduct);
     }
 
+    public Product ProductDtoToProduct(ProductDto productDto) {
+        return modelMapper.map(productDto, Product.class);
+    }
+
     public ProductDto ProductToProductDto(Product product) {
         return modelMapper.map(product, ProductDto.class);
     }
