@@ -3,6 +3,7 @@ package com.example.shoppingcartapi.security.config;
 import com.example.shoppingcartapi.security.jwt.AuthTokenFilter;
 import com.example.shoppingcartapi.security.jwt.JwtAuthEntryPoint;
 import com.example.shoppingcartapi.security.jwt.JwtUtils;
+import com.example.shoppingcartapi.security.oauth2.OAuth2SuccessHandler;
 import com.example.shoppingcartapi.security.user.ShopUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -31,6 +32,7 @@ public class ShopConfig {
     private final ShopUserDetailsService userDetailsService;
     private final JwtAuthEntryPoint authEntryPoint;
     private final JwtUtils jwtUtils;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
     private static final List<String> SECURE_URLS = List.of(
             "/api/v1/carts/**",
@@ -75,11 +77,16 @@ public class ShopConfig {
                         .authenticated()
                         .anyRequest()
                         .permitAll()
-                );
-
-        httpSecurity.authenticationProvider(daoAuthenticationProvider());
-
-        httpSecurity.addFilterBefore(authTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler(oAuth2SuccessHandler)
+                        .failureHandler((request, response, exception) -> {
+                            String targetUrl = "http://localhost:3000/login?error=" + exception.getMessage();
+                            response.sendRedirect(targetUrl);
+                        })
+                )
+                .authenticationProvider(daoAuthenticationProvider())
+                .addFilterBefore(authTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return httpSecurity.build();
     }

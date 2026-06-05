@@ -12,10 +12,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import java.security.Key;
-import java.util.Base64;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public class JwtUtils {
@@ -39,6 +38,18 @@ public class JwtUtils {
         return Jwts.builder()
                 .subject(userPrincipal.getEmail())
                 .claim("id", userPrincipal.getId())
+                .claim("roles", roles)
+                .issuedAt(new Date())
+                .expiration(new Date((new Date()).getTime() + expirationTime))
+                .signWith(key())
+                .compact();
+    }
+
+    // generate token for OAuth2
+    public String generateToken(String email, UUID userId, List<String> roles) {
+        return Jwts.builder()
+                .subject(email)
+                .claim("id", userId)
                 .claim("roles", roles)
                 .issuedAt(new Date())
                 .expiration(new Date((new Date()).getTime() + expirationTime))
