@@ -1,19 +1,26 @@
 package com.example.shoppingcartapi.service.image;
 
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import com.example.shoppingcartapi.dto.ImageDto;
 import com.example.shoppingcartapi.dto.ProductDto;
+import com.example.shoppingcartapi.entity.Product;
 import com.example.shoppingcartapi.exception.ResourceNotFoundException;
 import com.example.shoppingcartapi.entity.Image;
+import com.example.shoppingcartapi.mapper.ImageMapper;
+import com.example.shoppingcartapi.mapper.ProductMapper;
 import com.example.shoppingcartapi.repository.ImageRepository;
 import com.example.shoppingcartapi.service.product.IProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import javax.sql.rowset.serial.SerialBlob;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -21,64 +28,91 @@ import java.util.UUID;
 public class ImageService implements IImageService{
     private final ImageRepository imageRepository;
     private final IProductService productService;
+    private final ProductMapper productMapper;
+    private final ImageMapper imageMapper;
+    private final Cloudinary cloudinary;
 
     @Override
-    public Image getImageById(UUID id) {
-        return imageRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No image found with id: " + id));
-    }
+    @Transactional
+    public List<ImageDto> uploadImage(List<MultipartFile> files, UUID productId) {
+        ProductDto productDto = productService.getProductById(productId);
+        Product product = productMapper.ProductDtoToProduct(productDto);
 
-    @Override
-    public void deleteImageById(UUID id) {
-        imageRepository.findById(id)
-                .ifPresentOrElse(imageRepository::delete, () -> {
-                    throw new ResourceNotFoundException("No image found with id: " + id);
-                });
-    }
+        List<ImageDto> savedImagesDto = new ArrayList<>();
 
-    @Override
-    public List<ImageDto> saveImage(List<MultipartFile> files, UUID productId) {
-        ProductDto product = productService.getProductById(productId);
-        List<ImageDto> savedImageDto = new ArrayList<>();
         for (MultipartFile file : files) {
-            try{
+            try {
+                Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
+                String imageUrl = (String) uploadResult.get("secure_url");
+                String publicId = (String) uploadResult.get("public_id");
+
                 Image image = new Image();
                 image.setFileName(file.getOriginalFilename());
                 image.setFileType(file.getContentType());
-                image.setImage(new SerialBlob(file.getBytes()));
-//                image.setProduct(product);
+                image.setDownloadUrl(imageUrl);
+                image.setProduct(product);
+                image.setPublicId(publicId);
 
-                String buildDownloadUrl = "api/v1/images/image/download/";
-                String downloadUrl = buildDownloadUrl + image.getId();
-                image.setDownloadUrl(downloadUrl);
+                Image savedImage = imageRepository.save(image);
 
-                Image savedImage =  imageRepository.save(image);
-                savedImage.setDownloadUrl(buildDownloadUrl + savedImage.getId());
-                imageRepository.save(savedImage);
+                ImageDto imageDto = imageMapper.toImageDto(savedImage);
+                savedImagesDto.add(imageDto);
 
-                ImageDto imageDto = new ImageDto();
-                imageDto.setImageId(savedImage.getId());
-                imageDto.setFileName(savedImage.getFileName());
-                imageDto.setDownloadUrl(savedImage.getDownloadUrl());
-                savedImageDto.add(imageDto);
-            } catch (IOException | SQLException e){
-                throw new RuntimeException(e.getMessage());
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to upload image: " + e.getMessage());
             }
         }
-        return savedImageDto;
+        return savedImagesDto;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ImageDto getImageById(UUID id) {
+        Image image = imageRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("No image found with id: " + id));
+        return imageMapper.toImageDto(image);
     }
 
     @Override
     public void updateImage(MultipartFile file, UUID imageId) {
-        Image image = getImageById(imageId);
+        Image image = imageRepository.findById(imageId)
+                .orElseThrow(() -> new ResourceNotFoundException("No image found with id: " + imageId));
+
+        Product currentProduct = image.getProduct();
 
         try {
+            if (image.getPublicId() != null) {
+                cloudinary.uploader().destroy(image.getPublicId(), ObjectUtils.emptyMap());
+            }
+
+            Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
+            String newUrl = (String) uploadResult.get("secure_url");
+            String newPublicId = (String) uploadResult.get("public_id");
+
             image.setFileName(file.getOriginalFilename());
-            image.setFileType(file.getContentType()); // TODO Check
-            image.setImage(new SerialBlob(file.getBytes()));
+            image.setFileType(file.getContentType());
+            image.setDownloadUrl(newUrl);
+            image.setPublicId(newPublicId);
+            image.setProduct(currentProduct);
+
             imageRepository.save(image);
-        } catch (IOException | SQLException e) {
-            throw new RuntimeException(e.getMessage());
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to update image: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void deleteImageById(UUID imageId) {
+        ImageDto imageDto = getImageById(imageId);
+        Image image = imageMapper.toImage(imageDto);
+
+        try {
+            if (image.getPublicId() != null) {
+                cloudinary.uploader().destroy(image.getPublicId(), ObjectUtils.emptyMap());
+                imageRepository.delete(image);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to delete image: " + e.getMessage());
         }
     }
 }
