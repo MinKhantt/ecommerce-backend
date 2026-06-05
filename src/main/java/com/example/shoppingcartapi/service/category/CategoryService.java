@@ -1,49 +1,71 @@
 package com.example.shoppingcartapi.service.category;
 
+import com.example.shoppingcartapi.dto.CategoryDto;
+import com.example.shoppingcartapi.dto.request.AddCategoryRequest;
+import com.example.shoppingcartapi.dto.request.CategoryUpdateRequest;
 import com.example.shoppingcartapi.exception.AlreadyExistsException;
 import com.example.shoppingcartapi.exception.ResourceNotFoundException;
 import com.example.shoppingcartapi.entity.Category;
+import com.example.shoppingcartapi.mapper.CategoryMapper;
 import com.example.shoppingcartapi.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class CategoryService implements ICategoryService{
+
     private final CategoryRepository categoryRepository;
+    private final CategoryMapper categoryMapper;
 
     @Override
-    public Category getCategoryById(UUID id) {
+    public CategoryDto getCategoryById(UUID id) {
         return categoryRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Category Not Found!"));
+                .map(categoryMapper::categoryToCategoryDto)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
     }
 
     @Override
-    public Category getCategoryByName(String name) {
-        return categoryRepository.findByName(name);
+    public CategoryDto getCategoryByName(String name) {
+        return categoryRepository.findByName(name)
+                .map(categoryMapper::categoryToCategoryDto)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
     }
 
     @Override
-    public List<Category> getAllCategories() {
-        return categoryRepository.findAll();
+    public List<CategoryDto> getAllCategories() {
+        return categoryRepository.findAll()
+                .stream()
+                .map(categoryMapper::categoryToCategoryDto)
+                .toList();
     }
 
     @Override
-    public Category addCategory(Category category) {
-        return Optional.of(category).filter(c -> !categoryRepository.existsByName(c.getName()))
-                .map(categoryRepository :: save)
-                .orElseThrow(() -> new AlreadyExistsException(category.getName() + " already exist!"));
+    public CategoryDto addCategory(AddCategoryRequest request) {
+        if(categoryRepository.existsByName(request.getName())) {
+            throw new AlreadyExistsException("Category already exists: " + request.getName());
+        }
+
+        Category category = categoryMapper.addCategoryRequestToCategory(request);
+        categoryRepository.save(category);
+        return categoryMapper.categoryToCategoryDto(category);
     }
 
     @Override
-    public Category updateCategory(Category category, UUID id) {
-        return Optional.ofNullable(getCategoryById(id)).map(oldCategory -> {
-            oldCategory.setName(category.getName());
-            return categoryRepository.save(oldCategory);
-        }) .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+    @Transactional
+    public CategoryDto updateCategory(CategoryUpdateRequest request, UUID id) {
+
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+
+        category.setName(request.getName());
+
+        categoryRepository.save(category);
+        return categoryMapper.categoryToCategoryDto(category);
     }
 
     @Override

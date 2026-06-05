@@ -1,21 +1,23 @@
 package com.example.shoppingcartapi.service.category;
 
-import com.example.shoppingcartapi.entity.Category;
+import com.example.shoppingcartapi.dto.CategoryDto;
+import com.example.shoppingcartapi.dto.request.AddCategoryRequest;
+import com.example.shoppingcartapi.dto.request.CategoryUpdateRequest;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface ICategoryService {
 
-    Category getCategoryById(UUID id);
+    CategoryDto getCategoryById(UUID id);
 
-    Category getCategoryByName(String name);
+    CategoryDto getCategoryByName(String name);
 
-    List<Category> getAllCategories();
+    List<CategoryDto> getAllCategories();
 
-    Category addCategory(Category category);
+    CategoryDto addCategory(AddCategoryRequest category);
 
-    Category updateCategory(Category category, UUID id);
+    CategoryDto updateCategory(CategoryUpdateRequest category, UUID id);
 
     void  deleteCategoryById(UUID id);
 
