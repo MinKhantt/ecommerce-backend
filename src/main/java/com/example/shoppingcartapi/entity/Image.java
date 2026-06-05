@@ -28,6 +28,5 @@ public class Image extends BaseEntity implements Serializable {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "product_id")
-    @JsonIgnore
     private Product product;
 }

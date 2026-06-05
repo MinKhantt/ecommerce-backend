@@ -13,7 +13,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 @Table(name = "categories")
-public class Category implements Serializable {
+public class Category extends BaseEntity implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -26,7 +26,7 @@ public class Category implements Serializable {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
-    @JsonIgnore
+
     private List<Product> products;
 
     public Category(String name) {
