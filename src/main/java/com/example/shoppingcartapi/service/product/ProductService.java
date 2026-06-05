@@ -45,14 +45,12 @@ public class ProductService implements IProductService {
         }
 
         // Fetch or create the category
-        Category category = categoryRepository.findByName(request.getCategory());
-        if (category == null) {
-            Category newCategory = new Category(request.getCategory());
-            category = categoryRepository.save(newCategory);
-            log.debug("Created new category with id={} and name={}", category.getId(), category.getName());
-        } else {
-            log.debug("Using existing category with id={} and name={}", category.getId(), category.getName());
-        }
+        Category category = categoryRepository.findByName(request.getCategory())
+                .orElseGet(() -> {
+                    Category newCategory = new Category(request.getCategory());
+                    return categoryRepository.save(newCategory);
+                });
+        log.debug("Using category with id={} and name={}", category.getId(), category.getName());
 
         Product product = productMapper.toProduct(request);
         product.setCategory(category);
@@ -103,14 +101,12 @@ public class ProductService implements IProductService {
                 });
 
         // Fetch or create the category
-        Category category = categoryRepository.findByName(request.getCategory().getName());
-        if (category == null) {
-            Category newCategory = new Category(request.getCategory().getName());
-            category = categoryRepository.save(newCategory);
-            log.debug("Created new category with id={} and name={} during product update", category.getId(), category.getName());
-        } else {
-            log.debug("Using existing category with id={} and name={} during product update", category.getId(), category.getName());
-        }
+        Category category = categoryRepository.findByName(request.getCategory().getName())
+                        .orElseGet(() -> {
+                            Category newCategory = new Category(request.getCategory().getName());
+                            log.debug("Created new category with id={} and name={}", newCategory.getId(), newCategory.getName());
+                            return categoryRepository.save(newCategory);
+                        });
 
         productMapper.toUpdateProduct(request, existingProduct);
         existingProduct.setCategory(category);
