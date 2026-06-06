@@ -19,7 +19,11 @@ public class OrderItem extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+
+    @Column(nullable = false)
     private int quantity;
+
+    @Column(nullable = false)
     private BigDecimal price;
 
     @ManyToOne

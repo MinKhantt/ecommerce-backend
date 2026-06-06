@@ -7,9 +7,8 @@ import java.util.UUID;
 
 @Data
 public class OrderItemDto {
-    private UUID productId;
-    private String productName;
-    private String productBrand;
+    private UUID id;
     private int quantity;
     private BigDecimal price;
+    private ProductDto product;
 }

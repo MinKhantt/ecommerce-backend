@@ -10,9 +10,9 @@ import java.util.UUID;
 @Data
 public class OrderDto {
     private UUID id;
-    private Long userId;
     private LocalDateTime orderDate;
     private BigDecimal totalAmount;
-    private String status;
-    private List<OrderItemDto> items;
+    private String orderStatus;
+    private String shippingAddress;
+    private List<OrderItemDto> orderItems;
 }
