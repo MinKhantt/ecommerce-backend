@@ -1,15 +1,16 @@
 package com.example.shoppingcartapi.service.cart;
 
-import com.example.shoppingcartapi.entity.CartItem;
+import com.example.shoppingcartapi.dto.CartItemDto;
+import com.example.shoppingcartapi.dto.UserDto;
 
 import java.util.UUID;
 
 public interface ICartItemService {
-    void addItemToCart(UUID cartId, UUID productId, int quantity);
+    CartItemDto addItemToCart(UUID productId, int quantity, UserDto userDto);
 
-    void updateItemQuantity(UUID cartId, UUID productId, int quantity);
+    void updateItemQuantity(UUID productId, int quantity, UserDto userDto);
 
-    void removeItemFromCart(UUID cartId, UUID productId);
+    void removeItemFromCart(UUID productId, UserDto userDto);
 
-    CartItem getCartItem(UUID cartId, UUID productId);
+    CartItemDto getCartItem(UUID cartId, UUID productId);
 }

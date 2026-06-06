@@ -1,62 +1,57 @@
 package com.example.shoppingcartapi.service.cart;
 
+import com.example.shoppingcartapi.dto.CartDto;
 import com.example.shoppingcartapi.exception.ResourceNotFoundException;
 import com.example.shoppingcartapi.entity.Cart;
 import com.example.shoppingcartapi.entity.User;
-import com.example.shoppingcartapi.repository.CartItemRepository;
+import com.example.shoppingcartapi.mapper.CartMapper;
 import com.example.shoppingcartapi.repository.CartRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class CartService implements ICartService{
+
     private final CartRepository cartRepository;
-    private final CartItemRepository cartItemRepository;
+    private final CartMapper cartMapper;
 
     @Override
-    public Cart getCart(UUID id) {
-        Cart cart = cartRepository.findById(id)
+    public CartDto getCartByUserId(UUID userId) {
+        Cart cart = cartRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cart not found!"));
+        return cartMapper.ToCartDto(cart);
+    }
+
+    @Override
+    public void clearCart(UUID userId) {
+        Cart cart = cartRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found!"));
 
-        BigDecimal totalAmount = cart.getTotalAmount();
-        cart.setTotalAmount(totalAmount);
-        return cartRepository.save(cart);
+        cart.getItems().clear();
+        cart.updateTotalAmount();
     }
 
     @Override
-    public void clearCart(UUID id) {
-        Cart cart = getCart(id);
-        cartItemRepository.deleteAllByCartId(id);
-        cart.getCartItems().clear();
-        cartRepository.deleteById(id);
+    public BigDecimal getTotalPrice(UUID userId) {
+        return cartRepository.findByUserId(userId)
+                .map(Cart::getTotalAmount)
+                .orElse(BigDecimal.ZERO);
     }
 
     @Override
-    public BigDecimal getTotalPrice(UUID id) {
-        Cart cart = getCart(id);
-        return cart.getTotalAmount();
-    }
-
-
-    @Override
-    public Cart initNewCart(User user){
-        return Optional.ofNullable(getCartByUserId(user.getId()))
+    public void initNewCart(User user){
+        cartRepository.findByUserId(user.getId())
+                .map(cartMapper::ToCartDto)
                 .orElseGet(() -> {
                     Cart newCart = new Cart();
                     newCart.setUser(user);
-                    return cartRepository.save(newCart);
+                    return cartMapper.ToCartDto(cartRepository.save(newCart));
                 });
-    }
-
-    @Override
-    public Cart getCartByUserId(UUID userId) {
-        return cartRepository.findByUserId(userId);
     }
 }

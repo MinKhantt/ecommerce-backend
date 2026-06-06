@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -31,6 +32,18 @@ public class Cart extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
+    public Set<CartItem> getItems() {
+        return cartItems;
+    }
+
+    @PrePersist
+    @PreUpdate
+    public void calculateTotalAmount() {
+        this.totalAmount = cartItems.stream()
+                .map(item -> item.getTotalPrice() != null ? item.getTotalPrice() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
     public void addItem(CartItem cartItem) {
         this.cartItems.add(cartItem);
         cartItem.setCart(this);
@@ -52,5 +65,4 @@ public class Cart extends BaseEntity {
             return unitPrice.multiply(BigDecimal.valueOf(item.getQuantity()));
         }).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
-
 }

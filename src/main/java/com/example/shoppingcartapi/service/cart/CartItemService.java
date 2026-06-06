@@ -1,14 +1,16 @@
 package com.example.shoppingcartapi.service.cart;
 
-import com.example.shoppingcartapi.dto.ProductDto;
+import com.example.shoppingcartapi.dto.CartItemDto;
+import com.example.shoppingcartapi.dto.UserDto;
+import com.example.shoppingcartapi.entity.Product;
 import com.example.shoppingcartapi.exception.ResourceNotFoundException;
-import com.example.shoppingcartapi.mapper.ProductMapper;
+import com.example.shoppingcartapi.mapper.CartItemMapper;
 import com.example.shoppingcartapi.entity.Cart;
 import com.example.shoppingcartapi.entity.CartItem;
-import com.example.shoppingcartapi.repository.CartItemRepository;
 import com.example.shoppingcartapi.repository.CartRepository;
-import com.example.shoppingcartapi.service.product.IProductService;
+import com.example.shoppingcartapi.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,78 +21,88 @@ import java.util.UUID;
 @Transactional
 public class CartItemService implements ICartItemService{
 
-    private final CartItemRepository cartItemRepository;
-    private final IProductService productService;
-    private final ICartService cartService;
     private final CartRepository cartRepository;
-    private final ProductMapper productMapper;
+    private final CartItemMapper cartItemMapper;
+    private final ProductRepository productRepository;
 
     @Override
-    public void addItemToCart(UUID cartId, UUID productId, int quantity) {
-        //1. Get the cart
-        //2. Get the product
-        //3. Check if product already exist in cart
-        //4. If yes increase the product quantity
-        //5. If no init the new cartItem entry
+    @Transactional
+    public CartItemDto addItemToCart(UUID productId, int quantity, UserDto userDto) {
 
-        Cart cart = cartService.getCart(cartId);
-        ProductDto product = productService.getProductById(productId);
+        Cart cart = cartRepository.findById(userDto.getCart().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
 
-        // Check if item exists
-        CartItem cartItem = cart.getCartItems()
-                .stream()
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+        CartItem cartItem = cart.getItems().stream()
                 .filter(item -> item.getProduct().getId().equals(productId))
                 .findFirst()
-                .orElse(new CartItem());
+                .orElseGet(() -> {
+                    CartItem newItem = new CartItem();
+                    newItem.setCart(cart);
+                    newItem.setProduct(product);
+                    newItem.setUnitPrice(product.getPrice());
+                    cart.addItem(newItem);
+                    return newItem;
+                });
 
-        if (cartItem.getId() == null) {
-            cartItem.setCart(cart);
-//            cartItem.setProduct(product);
-            cartItem.setQuantity(quantity);
-            cartItem.setUnitPrice(product.getPrice());
-        }
-        else {
-            cartItem.setQuantity(cartItem.getQuantity() + quantity);
-        }
-
-        cartItem.setTotalPrice();
-        cart.addItem(cartItem);
-        cartItemRepository.save(cartItem);
-        cartRepository.save(cart);
+        cartItem.setQuantity(cartItem.getQuantity() + quantity);
+        cartItem.calculateTotalPrice();
+        cart.updateTotalAmount();
+        return cartItemMapper.ToCartItemDto(cartItem);
     }
 
     @Override
-    public void updateItemQuantity(UUID cartId, UUID productId, int quantity) {
-        Cart cart = cartService.getCart(cartId);
-        cart.getCartItems()
-                .stream()
+    @Transactional
+    public void updateItemQuantity(UUID productId, int quantity, UserDto userDto) {
+
+        Cart cart = cartRepository.findById(userDto.getCart().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
+
+        if (!cart.getUser().getId().equals(userDto.getId())) {
+            throw new AccessDeniedException("You do not have permission to modify this cart.");
+        }
+
+        cart.getItems().stream()
                 .filter(item -> item.getProduct().getId().equals(productId))
                 .findFirst()
-                .ifPresent(item -> {
+                .ifPresentOrElse(item -> {
                     item.setQuantity(quantity);
                     item.setUnitPrice(item.getProduct().getPrice());
                     item.setTotalPrice();
+                    cart.updateTotalAmount();
+                }, () -> {
+                    throw new ResourceNotFoundException("Product not found in cart!");
                 });
+    }
 
+
+    @Override
+    @Transactional
+    public void removeItemFromCart(UUID productId, UserDto userDto) {
+
+        Cart cart = cartRepository.findById(userDto.getCart().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
+
+        if (!cart.getUser().getId().equals(userDto.getId())) {
+            throw new AccessDeniedException("You do not have permission to modify this cart.");
+        }
+
+        cart.getItems().removeIf(item -> item.getProduct().getId().equals(productId));
         cart.updateTotalAmount();
-        cartRepository.save(cart);
     }
 
     @Override
-    public void removeItemFromCart(UUID cartId, UUID productId) {
-        Cart cart = cartService.getCart(cartId);
-        CartItem itemToRemove = getCartItem(cartId, productId);
-        cart.removeItem(itemToRemove);
-        cartRepository.save(cart);
-    }
+    public CartItemDto getCartItem(UUID cartId, UUID productId) {
+        Cart cart = cartRepository.findById(cartId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
 
-    @Override
-    public CartItem getCartItem(UUID cartId, UUID productId) {
-        Cart cart = cartService.getCart(cartId);
-        return cart.getCartItems()
-                .stream()
-                .filter(item -> item.getProduct().getId().equals(productId))
+        CartItem item = cart.getItems().stream()
+                .filter(i -> i.getProduct().getId().equals(productId))
                 .findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException("item not found!"));
+                .orElseThrow(() -> new ResourceNotFoundException("Item not found!"));
+
+        return cartItemMapper.ToCartItemDto(item);
     }
 }
