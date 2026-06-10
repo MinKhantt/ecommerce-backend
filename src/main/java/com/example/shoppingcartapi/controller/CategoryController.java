@@ -9,6 +9,7 @@ import com.example.shoppingcartapi.exception.ResourceNotFoundException;
 import com.example.shoppingcartapi.service.category.ICategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,6 +35,7 @@ public class CategoryController {
     }
 
     @PostMapping()
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse> addCategory(@RequestBody AddCategoryRequest name) {
         try {
             CategoryDto categoryDto = categoryService.addCategory(name);
@@ -67,6 +69,7 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse> deleteCategoryById(@PathVariable UUID id) {
         try {
             categoryService.deleteCategoryById(id);
@@ -78,6 +81,7 @@ public class CategoryController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<ApiResponse> updateCategoryById(
             @PathVariable UUID id,
             @RequestBody CategoryUpdateRequest request
