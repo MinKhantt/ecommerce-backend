@@ -37,4 +37,7 @@ public class Order extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    @OneToOne(mappedBy = "order")
+    private Payment payment;
 }

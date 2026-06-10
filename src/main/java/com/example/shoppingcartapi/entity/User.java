@@ -1,16 +1,10 @@
 package com.example.shoppingcartapi.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.NaturalId;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @AllArgsConstructor
@@ -18,6 +12,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Table(name = "users")
+@EqualsAndHashCode(callSuper = false)
 public class User extends BaseEntity {
 
     @Id
@@ -36,6 +31,9 @@ public class User extends BaseEntity {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Order> orders;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Payment> payments = new HashSet<>();
 
     @ManyToMany(
             fetch = FetchType.EAGER,
