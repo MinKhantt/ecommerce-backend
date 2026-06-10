@@ -21,6 +21,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+
 import java.util.List;
 
 @EnableMethodSecurity
@@ -36,7 +38,8 @@ public class ShopConfig {
 
     private static final List<String> SECURE_URLS = List.of(
             "/api/v1/carts/**",
-            "/api/v1/cartItems/**"
+            "/api/v1/cartItems/**",
+            "/api/v1/payments/**"
     );
 
     @Bean
@@ -73,7 +76,9 @@ public class ShopConfig {
         httpSecurity.csrf(AbstractHttpConfigurer::disable)
                 .exceptionHandling(exception ->exception.authenticationEntryPoint(authEntryPoint))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth.requestMatchers(SECURE_URLS.toArray(String[]::new))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/v1/payments/webhook").permitAll()
+                        .requestMatchers(SECURE_URLS.toArray(String[]::new))
                         .authenticated()
                         .anyRequest()
                         .permitAll()
@@ -86,7 +91,16 @@ public class ShopConfig {
                         })
                 )
                 .authenticationProvider(daoAuthenticationProvider())
-                .addFilterBefore(authTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(authTokenFilter(), UsernamePasswordAuthenticationFilter.class)
+                .cors(
+                        cors -> cors.configurationSource(request -> {
+                            var corsConfig = new CorsConfiguration();
+                            corsConfig.setAllowedOrigins(List.of("http://localhost:5173"));
+                            corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+                            corsConfig.setAllowedHeaders(List.of("*"));
+                            return corsConfig;
+                        })
+                );
 
         return httpSecurity.build();
     }
