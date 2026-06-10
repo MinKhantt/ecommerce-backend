@@ -19,6 +19,7 @@ A Spring Boot learning project I built as a student to practice building a simpl
 - OAuth2
 - Redis
 - Cloudinary
+- Stripe
 - Lombok, ModelMapper, Jakarta Validation
 
 ## Project Structure
@@ -39,59 +40,77 @@ All endpoints start with `/api/v1`.
 
 ## Endpoints
 
+Access levels:
+- `(Public)` — no authentication required
+- `(Authenticated)` — any valid JWT token
+- `(Admin)` — requires `ROLE_ADMIN` role
+
+Auth (`/auth`)
+- `POST /auth/register` (Public)
+- `POST /auth/login` (Public)
+
 Products (`/products`)
-- `GET /products`
-- `GET /products/product/{productId}`
-- `POST /products`
-- `PUT /products/product/{productId}`
-- `DELETE /products/product/{productId}`
-- `GET /products/by-brand-and-name`
-- `GET /products/by-category-and-brand`
-- `GET /products/by-name`
-- `GET /products/by-brand`
-- `GET /products/by-category`
-- `GET /products/count/by-brand-and-name`
+- `GET /products` (Public)
+- `GET /products/product/{productId}` (Public)
+- `POST /products` (Admin)
+- `PUT /products/product/{productId}` (Admin)
+- `DELETE /products/product/{productId}` (Admin)
+- `GET /products/by-brand-and-name` (Public)
+- `GET /products/by-category-and-brand` (Public)
+- `GET /products/by-name` (Public)
+- `GET /products/by-brand` (Public)
+- `GET /products/by-category` (Public)
+- `GET /products/count/by-brand-and-name` (Public)
 
 Categories (`/categories`)
-- `GET /categories`
-- `POST /categories`
-- `GET /categories/{id}`
-- `GET /categories/name/{name}`
-- `DELETE /categories/{id}`
-- `PUT /categories/{id}`
+- `GET /categories` (Public)
+- `POST /categories` (Admin)
+- `GET /categories/{id}` (Public)
+- `GET /categories/name/{name}` (Public)
+- `DELETE /categories/{id}` (Admin)
+- `PUT /categories/{id}` (Admin)
 
 Images (`/images`)
-- `POST /images/upload`
-- `GET /images/view/{imageId}`
-- `GET /images/download/{imageId}`
-- `PUT /images/{imageId}`
-- `DELETE /images/{imageId}`
+- `POST /images/upload` (Admin)
+- `GET /images/view/{imageId}` (Public)
+- `GET /images/download/{imageId}` (Public)
+- `PUT /images/{imageId}` (Admin)
+- `DELETE /images/{imageId}` (Admin)
 
 Carts (`/carts`)
-- `GET /carts/{cartId}/my-cart`
-- `DELETE /carts/{cartId}/clear`
-- `GET /carts/{cartId}/cart/total-price`
+- `GET /carts` (Authenticated)
+- `DELETE /carts` (Authenticated)
+- `GET /carts/total-price` (Authenticated)
 
 Cart Items (`/cartItems`)
-- `POST /cartItems/item/add`
-- `DELETE /cartItems/cart/{cartId}/item/{itemId}/remove`
-- `PUT /cartItems/cart/{cartId}/item/{itemId}/update`
+- `POST /cartItems/add?productId={productId}&quantity={quantity}` (Authenticated)
+- `PUT /cartItems/update/{productId}?quantity={quantity}` (Authenticated)
+- `DELETE /cartItems/remove/{productId}` (Authenticated)
 
 Orders (`/orders`)
-- `POST /orders/order`
-- `GET /orders/{orderId}/order`
-- `GET /orders/{userId}/order`
+- `POST /orders` (Authenticated)
+- `GET /orders` (Admin)
+- `GET /orders/{orderId}` (Authenticated)
+- `GET /orders/my-orders` (Authenticated)
+- `DELETE /orders/{orderId}` (Authenticated)
+- `PATCH /orders/{orderId}/order-status?status={status}` (Admin)
+
+Payments (`/payments`)
+- `POST /payments/create-intent` (Authenticated)
+- `GET /payments/{paymentId}` (Authenticated)
+- `GET /payments/my-payments` (Authenticated)
+- `GET /payments` (Admin)
+- `PATCH /payments/{paymentId}/status?status={status}` (Admin)
+- `DELETE /payments/{paymentId}/cancel` (Authenticated)
+- `POST /payments/webhook` (Public — Stripe webhook)
 
 Users (`/users`)
-- `GET /users/{userId}`
-- `POST /users`
-- `PUT /users/{userId}`
-- `DELETE /users/{userId}
-- `GET /users/by-email
-
-Auth (`/auths`)
-- `POST /auths/register`
-- `POST /auths/login`
+- `GET /users/{userId}` (Public)
+- `GET /users` (Admin)
+- `POST /users` (Public)
+- `PUT /users/{userId}` (Admin)
+- `DELETE /users/{userId}` (Admin)
+- `GET /users/by-email?email={email}` (Public)
 
 ## Getting Started
 
@@ -101,6 +120,10 @@ Prerequisites
 
 Configure database
 - Edit `src/main/resources/application.properties` with your Postgres URL, username, and password.
+
+Configure Stripe
+- Set `STRIPE_API_KEY` and `STRIPE_WEBHOOK_SECRET` in your `.env` file.
+- In test mode, use the Stripe CLI to forward webhooks: `stripe listen --forward-to localhost:{port}/api/v1/payments/webhook`
 
 Run the app
 ```bash
