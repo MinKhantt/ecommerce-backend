@@ -56,6 +56,7 @@ public class PaymentService implements IPaymentService {
         return switch (PaymentProvider.valueOf(request.getPaymentProvider().toUpperCase())) {
             case STRIPE -> paymentHelper.createStripePayment(userId, order, request);
             case K_PAY -> paymentHelper.handleLocalWalletPayment(order, request);
+            case CASH_ON_DELIVERY -> paymentHelper.handleCodPayment(order);
             default -> paymentHelper.handleCodPayment(order);
         };
     }
