@@ -15,4 +15,5 @@ public class OrderDto {
     private String orderStatus;
     private String shippingAddress;
     private List<OrderItemDto> orderItems;
+    private UserSummaryDto user;
 }
