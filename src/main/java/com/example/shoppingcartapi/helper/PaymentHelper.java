@@ -33,12 +33,17 @@ public class PaymentHelper {
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
     private final ObjectMapper objectMapper;
+    private final MailHelper mailHelper;
 
     public PaymentIntentResponse handleCodPayment(Order order) {
         Payment payment = createBasePayment(order, PaymentMethod.CASH_ON_DELIVERY, PaymentProvider.NONE);
         payment.setPaymentStatus(PaymentStatus.PENDING);
         payment.setCurrency("MMK");
         paymentRepository.save(payment);
+
+        // send mail to user
+        OrderEmailContext ctx = OrderEmailContext.from(order, payment);
+        mailHelper.sendOrderConfirmation(order.getUser().getEmail(), ctx);
 
         return new PaymentIntentResponse(payment.getId(), null, order.getTotalAmount(), "usd", PaymentStatus.PENDING.name());
     }
@@ -90,6 +95,10 @@ public class PaymentHelper {
         payment.setPaymentStatus(PaymentStatus.PENDING);
         payment.setCurrency("MMK");
         paymentRepository.save(payment);
+
+        // send mail to user
+        OrderEmailContext ctx = OrderEmailContext.from(order, payment);
+        mailHelper.sendOrderConfirmation(order.getUser().getEmail(), ctx);
 
         return new PaymentIntentResponse(payment.getId(), "QR_CODE_URL_OR_DEEP_LINK", order.getTotalAmount(), "usd", PaymentStatus.PENDING.name());
     }
@@ -146,8 +155,11 @@ public class PaymentHelper {
                         Order order = payment.getOrder();
                         order.setOrderStatus(OrderStatus.PROCESSING);
                         orderRepository.save(order);
-
                         log.info("Payment succeeded for order: {}", order.getId());
+
+                        // send mail to user
+                        OrderEmailContext ctx = OrderEmailContext.from(order, payment);
+                        mailHelper.sendOrderConfirmation(order.getUser().getEmail(), ctx);
                     });
         } catch (Exception e) {
             log.error("Error handling payment_intent.succeeded: {}", e.getMessage());
