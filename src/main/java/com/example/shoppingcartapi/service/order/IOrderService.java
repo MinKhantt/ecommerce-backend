@@ -13,6 +13,8 @@ public interface IOrderService {
 
     OrderDto getOrderById(UUID orderId, UUID currentUserId);
 
+    OrderDto getOrderByIdForAdmin(UUID orderId);
+
     List<OrderDto> getUserOrders(UUID userId);
 
     OrderDto updateOrderStatus(UUID orderId, String status);

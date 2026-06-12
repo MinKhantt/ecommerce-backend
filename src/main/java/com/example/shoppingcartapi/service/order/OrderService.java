@@ -101,6 +101,14 @@ public class OrderService implements IOrderService{
     }
 
     @Override
+    public OrderDto getOrderByIdForAdmin(UUID orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+        return orderMapper.toOrderDto(order);
+    }
+
+    @Override
     public List<OrderDto> getUserOrders(UUID userId) {
         List<Order> orders = orderRepository.findByUserId(userId);
         return  orders.stream()
