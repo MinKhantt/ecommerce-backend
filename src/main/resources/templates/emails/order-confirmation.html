@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f4f4f5;">
+        <tr>
+            <td align="center" style="padding:32px 16px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;">
+                    <!-- Header -->
+                    <tr>
+                        <td align="center" style="background-color:#2563eb;border-radius:12px 12px 0 0;padding:32px 24px;">
+                            <img src="https://placehold.co/160x48/2563eb/ffffff?text=STORE" alt="Store Logo" width="160" height="48" style="display:block;border:0;" />
+                            <h1 style="margin:16px 0 0 0;font-size:24px;font-weight:700;color:#ffffff;letter-spacing:-0.5px;">Order Confirmed!</h1>
+                            <p style="margin:4px 0 0 0;font-size:14px;color:#bfdbfe;">Thank you for your purchase</p>
+                        </td>
+                    </tr>
+                    <!-- Order Info -->
+                    <tr>
+                        <td style="background-color:#ffffff;padding:24px 24px 0 24px;">
+                            <p style="margin:0 0 16px 0;font-size:15px;color:#18181b;">Hi <strong th:text="${ctx.customerName}">Customer</strong>,</p>
+                            <p style="margin:0 0 16px 0;font-size:14px;color:#52525b;line-height:1.5;">Your order has been placed successfully. Here's a summary of your purchase.</p>
+                            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f8fafc;border-radius:8px;padding:16px;margin-bottom:24px;">
+                                <tr>
+                                    <td style="padding:4px 12px 4px 0;font-size:13px;color:#71717a;white-space:nowrap;">Order Number</td>
+                                    <td style="padding:4px 0;font-size:13px;font-weight:600;color:#18181b;" th:text="'#' + ${ctx.orderId}">#ORD-001</td>
+                                    <td style="padding:4px 12px 4px 0;font-size:13px;color:#71717a;white-space:nowrap;">Date</td>
+                                    <td style="padding:4px 0;font-size:13px;font-weight:600;color:#18181b;" th:text="${#temporals.format(ctx.orderDate, 'MMM dd, yyyy')}">Jun 12, 2026</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:4px 12px 4px 0;font-size:13px;color:#71717a;white-space:nowrap;">Status</td>
+                                    <td style="padding:4px 0;font-size:13px;font-weight:600;color:#2563eb;" th:text="${ctx.orderStatus}">Processing</td>
+                                    <td style="padding:4px 12px 4px 0;font-size:13px;color:#71717a;white-space:nowrap;">Payment</td>
+                                    <td style="padding:4px 0;font-size:13px;font-weight:600;color:#059669;" th:if="${ctx.payment != null and ctx.payment.paid}">Paid</td>
+                                    <td style="padding:4px 0;font-size:13px;font-weight:600;color:#d97706;" th:if="${ctx.payment == null or !ctx.payment.paid}" th:text="${ctx.payment != null ? ctx.payment.status : 'Pending'}">Pending</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- Items Table -->
+                    <tr>
+                        <td style="background-color:#ffffff;padding:0 24px;">
+                            <h2 style="margin:0 0 12px 0;font-size:16px;font-weight:600;color:#18181b;">Order Items</h2>
+                            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">
+                                <thead>
+                                    <tr style="border-bottom:2px solid #e4e4e7;">
+                                        <th style="padding:8px 0;font-size:12px;font-weight:600;color:#71717a;text-transform:uppercase;letter-spacing:0.5px;text-align:left;">Product</th>
+                                        <th style="padding:8px 0;font-size:12px;font-weight:600;color:#71717a;text-transform:uppercase;letter-spacing:0.5px;text-align:center;">Qty</th>
+                                        <th style="padding:8px 0;font-size:12px;font-weight:600;color:#71717a;text-transform:uppercase;letter-spacing:0.5px;text-align:right;">Price</th>
+                                        <th style="padding:8px 0;font-size:12px;font-weight:600;color:#71717a;text-transform:uppercase;letter-spacing:0.5px;text-align:right;">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="item : ${ctx.items}" style="border-bottom:1px solid #f4f4f5;">
+                                        <td style="padding:16px 0;vertical-align:middle;">
+                                            <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                                                <tr>
+                                                    <td style="padding-right:12px;vertical-align:middle;">
+                                                        <img th:if="${item.imageUrl != null}" th:src="${item.imageUrl}" alt="" width="48" height="48" style="display:block;width:48px;height:48px;border-radius:6px;object-fit:cover;background-color:#f4f4f5;" />
+                                                        <img th:if="${item.imageUrl == null}" src="https://placehold.co/48x48/e4e4e7/71717a?text=N/A" alt="" width="48" height="48" style="display:block;width:48px;height:48px;border-radius:6px;object-fit:cover;background-color:#f4f4f5;" />
+                                                    </td>
+                                                    <td style="vertical-align:middle;">
+                                                        <p style="margin:0;font-size:14px;font-weight:600;color:#18181b;" th:text="${item.productName}">Product Name</p>
+                                                        <p style="margin:2px 0 0 0;font-size:12px;color:#71717a;" th:text="${item.brand}">Brand</p>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td style="padding:16px 0;vertical-align:middle;text-align:center;font-size:14px;color:#52525b;" th:text="${item.quantity}">1</td>
+                                        <td style="padding:16px 0;vertical-align:middle;text-align:right;font-size:14px;color:#52525b;" th:text="'$' + ${#numbers.formatDecimal(item.price, 1, 2)}">$19.99</td>
+                                        <td style="padding:16px 0;vertical-align:middle;text-align:right;font-size:14px;font-weight:600;color:#18181b;" th:text="'$' + ${#numbers.formatDecimal(item.price * item.quantity, 1, 2)}">$19.99</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- Totals -->
+                    <tr>
+                        <td style="background-color:#ffffff;padding:16px 24px 24px 24px;">
+                            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                                <tr>
+                                    <td style="padding:6px 0;font-size:14px;color:#52525b;">Subtotal</td>
+                                    <td style="padding:6px 0;font-size:14px;color:#52525b;text-align:right;" th:text="'$' + ${#numbers.formatDecimal(ctx.totalAmount, 1, 2)}">$0.00</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:6px 0;font-size:14px;color:#52525b;">Shipping</td>
+                                    <td style="padding:6px 0;font-size:14px;color:#52525b;text-align:right;">Free</td>
+                                </tr>
+                                <tr style="border-top:2px solid #e4e4e7;">
+                                    <td style="padding:12px 0 0 0;font-size:16px;font-weight:700;color:#18181b;">Total</td>
+                                    <td style="padding:12px 0 0 0;font-size:16px;font-weight:700;color:#18181b;text-align:right;" th:text="'$' + ${#numbers.formatDecimal(ctx.totalAmount, 1, 2)}">$0.00</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- Payment & Shipping -->
+                    <tr>
+                        <td style="background-color:#ffffff;padding:0 24px 24px 24px;">
+                            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                                <tr>
+                                    <td width="50%" style="vertical-align:top;padding-right:12px;">
+                                        <div style="background-color:#f8fafc;border-radius:8px;padding:16px;">
+                                            <h3 style="margin:0 0 8px 0;font-size:13px;font-weight:600;color:#71717a;text-transform:uppercase;letter-spacing:0.5px;">Payment</h3>
+                                            <p style="margin:0 0 4px 0;font-size:13px;color:#18181b;" th:if="${ctx.payment != null}" th:text="${ctx.payment.method}">Credit Card</p>
+                                            <p style="margin:0 0 4px 0;font-size:13px;color:#18181b;" th:if="${ctx.payment == null}">Pending</p>
+                                            <p style="margin:0;font-size:12px;color:#71717a;" th:if="${ctx.payment != null and ctx.payment.transactionId != null}" th:text="'ID: ' + ${ctx.payment.transactionId}">ID: pi_xxx</p>
+                                        </div>
+                                    </td>
+                                    <td width="50%" style="vertical-align:top;padding-left:12px;">
+                                        <div style="background-color:#f8fafc;border-radius:8px;padding:16px;">
+                                            <h3 style="margin:0 0 8px 0;font-size:13px;font-weight:600;color:#71717a;text-transform:uppercase;letter-spacing:0.5px;">Shipping To</h3>
+                                            <p style="margin:0;font-size:13px;color:#18181b;white-space:pre-line;" th:text="${ctx.shippingAddress}">123 Main St, City</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- CTA Button -->
+                    <tr>
+                        <td align="center" style="background-color:#ffffff;padding:0 24px 32px 24px;">
+                            <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                                <tr>
+                                    <td align="center" style="background-color:#2563eb;border-radius:8px;">
+                                        <a href="http://localhost:5173/orders/${ctx.orderId}" style="display:inline-block;padding:14px 32px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:8px;">View Your Order</a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color:#f8fafc;border-radius:0 0 12px 12px;padding:24px;text-align:center;">
+                            <p style="margin:0 0 8px 0;font-size:12px;color:#71717a;">Need help? Contact our <a href="mailto:support@store.com" style="color:#2563eb;text-decoration:underline;">support team</a>.</p>
+                            <p style="margin:0;font-size:11px;color:#a1a1aa;">&copy; 2026 Your Store Name. All rights reserved.</p>
+                            <p style="margin:8px 0 0 0;font-size:11px;color:#a1a1aa;">123 Business Ave, Suite 100, City, State 12345</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
