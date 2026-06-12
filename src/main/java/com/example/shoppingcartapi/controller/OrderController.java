@@ -39,9 +39,9 @@ public class OrderController {
 
     @GetMapping()
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<List<OrderDto>> getAllOrders() {
+    public ResponseEntity<ApiResponse> getAllOrders() {
         List<OrderDto> orders = orderService.getAllOrders();
-        return ResponseEntity.ok(orders);
+        return ResponseEntity.ok(new ApiResponse("Success", orders));
     }
 
     @GetMapping("/{orderId}")
@@ -49,6 +49,18 @@ public class OrderController {
         try {
             UserDto user = userService.getAuthenticatedUser();
             OrderDto order = orderService.getOrderById(orderId, user.getId());
+            return ResponseEntity.ok(new ApiResponse("Success", order));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse(e.getMessage(), null));
+        }
+    }
+
+    @GetMapping("/admin/{orderId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<ApiResponse> getOrderByIdForAdmin(@PathVariable UUID orderId) {
+        try {
+            OrderDto order = orderService.getOrderByIdForAdmin(orderId);
             return ResponseEntity.ok(new ApiResponse("Success", order));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -80,8 +92,8 @@ public class OrderController {
         }
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{orderId}/order-status")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> updateOrderStatus(
             @PathVariable UUID orderId,
             @RequestParam String status
