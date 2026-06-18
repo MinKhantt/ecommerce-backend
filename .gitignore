@@ -35,3 +35,5 @@ build/
 ### Enviorments Variable ###
 .env
 .env.prod
+
+docs/*
