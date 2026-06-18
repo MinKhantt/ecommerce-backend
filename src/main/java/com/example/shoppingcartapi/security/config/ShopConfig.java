@@ -6,7 +6,6 @@ import com.example.shoppingcartapi.security.jwt.JwtUtils;
 import com.example.shoppingcartapi.security.oauth2.OAuth2SuccessHandler;
 import com.example.shoppingcartapi.security.user.ShopUserDetailsService;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,7 +16,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -35,24 +33,13 @@ public class ShopConfig {
     private final JwtAuthEntryPoint authEntryPoint;
     private final JwtUtils jwtUtils;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final PasswordEncoder passwordEncoder;
 
     private static final List<String> SECURE_URLS = List.of(
             "/api/v1/carts/**",
             "/api/v1/cartItems/**",
             "/api/v1/payments/**"
     );
-
-    @Bean
-    public ModelMapper modelMapper() {
-        ModelMapper mapper = new ModelMapper();
-        mapper.getConfiguration().setSkipNullEnabled(true);
-        return mapper;
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 
     @Bean
     public AuthTokenFilter authTokenFilter() {
@@ -67,7 +54,7 @@ public class ShopConfig {
     @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider() {
         var authProvider = new DaoAuthenticationProvider(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder());
+        authProvider.setPasswordEncoder(passwordEncoder);
         return authProvider;
     }
 
@@ -86,7 +73,7 @@ public class ShopConfig {
                 .oauth2Login(oauth2 -> oauth2
                         .successHandler(oAuth2SuccessHandler)
                         .failureHandler((request, response, exception) -> {
-                            String targetUrl = "http://localhost:3000/login?error=" + exception.getMessage();
+                            String targetUrl = "http://localhost:5173/login?error=" + exception.getMessage();
                             response.sendRedirect(targetUrl);
                         })
                 )

@@ -4,30 +4,32 @@ import com.example.shoppingcartapi.security.user.ShopUserDetails;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
+import io.jsonwebtoken.Claims;
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 @Component
+@Slf4j
 public class JwtUtils {
 
-    private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
+    @Value("${jwt.secret.key}")
+    private String jwtSecretKey;
 
-    @Value("${auth.token.jwtSecret}")
-    private String jwtSecret;
+    @Value("${access.token.expiration}")
+    private int accessTokenExpiration;
 
-    @Value("${auth.token.expirationInMils}")
-    private int expirationTime;
+    @Value("${refresh.token.expiration}")
+    private int refreshExpirationTime;
 
-    public String generateTokenForUser(Authentication authentication) {
+    public String generateAccessToken(Authentication authentication) {
         ShopUserDetails userPrincipal = (ShopUserDetails) authentication.getPrincipal();
 
         List<String> roles = userPrincipal.getAuthorities()
@@ -40,28 +42,59 @@ public class JwtUtils {
                 .claim("id", userPrincipal.getId())
                 .claim("roles", roles)
                 .issuedAt(new Date())
-                .expiration(new Date((new Date()).getTime() + expirationTime))
+                .expiration(new Date((new Date()).getTime() + accessTokenExpiration))
+                .signWith(key())
+                .compact();
+    }
+
+    public String generateRefreshToken(Authentication authentication) {
+        ShopUserDetails userPrincipal = (ShopUserDetails) authentication.getPrincipal();
+
+        List<String> roles = userPrincipal.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
+        return Jwts.builder()
+                .id(UUID.randomUUID().toString())
+                .subject(userPrincipal.getEmail())
+                .claim("id", userPrincipal.getId())
+                .claim("roles", roles)
+                .issuedAt(new Date())
+                .expiration(new Date((new Date()).getTime() + refreshExpirationTime))
                 .signWith(key())
                 .compact();
     }
 
     // generate token for OAuth2
-    public String generateToken(String email, UUID userId, List<String> roles) {
+    public String generateOAuthAccessToken(String email, UUID userId, List<String> roles) {
         return Jwts.builder()
                 .subject(email)
                 .claim("id", userId)
                 .claim("roles", roles)
                 .issuedAt(new Date())
-                .expiration(new Date((new Date()).getTime() + expirationTime))
+                .expiration(new Date((new Date()).getTime() + accessTokenExpiration))
+                .signWith(key())
+                .compact();
+    }
+
+    public String generateOAuthRefreshToken(String email, UUID userId, List<String> roles) {
+        return Jwts.builder()
+                .id(UUID.randomUUID().toString())
+                .subject(email)
+                .claim("id", userId)
+                .claim("roles", roles)
+                .issuedAt(new Date())
+                .expiration(new Date((new Date()).getTime() + refreshExpirationTime))
                 .signWith(key())
                 .compact();
     }
 
     private SecretKey key() {
-        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
+        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecretKey));
     }
 
-    public String getUsernameFromToken(String token) {
+    public String extractUsername(String token) {
         return Jwts.parser()
                 .verifyWith(key())
                 .build()
@@ -70,30 +103,33 @@ public class JwtUtils {
                 .getSubject();
     }
 
-    public boolean validateToken(String token) {
+    public Claims extractAllClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(key())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+
+    public String extractTokenId(String token) {
+        return extractAllClaims(token).getId();
+    }
+
+    public UUID getUserIdFromToken(String token) {
+        String id = extractAllClaims(token).get("id", String.class);
+        return UUID.fromString(id);
+    }
+
+    public boolean isTokenValid(String token) {
         try {
             Jwts.parser()
                     .verifyWith(key())
                     .build()
                     .parseSignedClaims(token);
-
             return true;
-        } catch (ExpiredJwtException e) {
-            logger.error("JWT token is expired: {}", e.getMessage());
-            throw new JwtException(e.getMessage());
-        } catch (UnsupportedJwtException e) {
-            logger.error("JWT token is unsupported: {}", e.getMessage());
-            throw new JwtException(e.getMessage());
-        } catch (MalformedJwtException e) {
-            logger.error("Invalid JWT token: {}", e.getMessage());
-            throw new JwtException(e.getMessage());
-        } catch (io.jsonwebtoken.security.SignatureException e) {
-            logger.error("Invalid JWT signature: {}", e.getMessage());
-            throw new JwtException(e.getMessage());
-        } catch (IllegalArgumentException e) {
-            logger.error("JWT claims string is empty: {}", e.getMessage());
-            throw new JwtException(e.getMessage());
+        } catch (JwtException | IllegalArgumentException e) {
+            log.error("Invalid JWT token: {}", e.getMessage());
+            return false;
         }
-//        return false;
     }
 }

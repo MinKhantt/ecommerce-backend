@@ -5,19 +5,25 @@ import com.example.shoppingcartapi.entity.User;
 import com.example.shoppingcartapi.repository.RoleRepository;
 import com.example.shoppingcartapi.repository.UserRepository;
 import com.example.shoppingcartapi.security.jwt.JwtUtils;
-import io.jsonwebtoken.io.IOException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Component
 @RequiredArgsConstructor
@@ -26,6 +32,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final JwtUtils jwtUtils;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final StringRedisTemplate redisTemplate;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
@@ -33,7 +41,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             HttpServletRequest request,
             HttpServletResponse response,
             Authentication authentication
-    ) throws IOException, java.io.IOException {
+    ) throws IOException {
 
         OAuth2AuthenticationToken token = (OAuth2AuthenticationToken) authentication;
         Map<String, Object> attributes = token.getPrincipal().getAttributes();
@@ -42,8 +50,11 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         User user = userRepository.findByEmail(email).orElseGet(() -> {
             User newUser = new User();
             newUser.setEmail(email);
-            newUser.setFirstName((String) attributes.get("given_name"));
-            newUser.setLastName((String) attributes.get("family_name"));
+            String givenName = (String) attributes.get("given_name");
+            String familyName = (String) attributes.get("family_name");
+            newUser.setFirstName(givenName != null ? givenName : "");
+            newUser.setLastName(familyName != null ? familyName : "");
+            newUser.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
 
             Role role = roleRepository.findByName("ROLE_USER");
             newUser.setRoles(Set.of(role));
@@ -55,9 +66,36 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 .map(Role::getName)
                 .toList();
 
-        String jwt = jwtUtils.generateToken(user.getEmail(), user.getId(), roles);
+        String accessToken = jwtUtils.generateOAuthAccessToken(user.getEmail(), user.getId(), roles);
+        String refreshToken = jwtUtils.generateOAuthRefreshToken(user.getEmail(), user.getId(), roles);
 
-        String targetUrl = "http://localhost:5173/login-success?token=" + jwt;
+        String tokenId = jwtUtils.extractTokenId(refreshToken);
+        redisTemplate.opsForValue().set(
+                "refresh:" + tokenId,
+                refreshToken,
+                30,
+                TimeUnit.DAYS
+        );
+
+        String code = UUID.randomUUID().toString();
+        redisTemplate.opsForValue().set(
+                "oauth2:code:" + code,
+                accessToken,
+                30,
+                TimeUnit.SECONDS
+        );
+
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
+                .httpOnly(true)
+                .secure(false)
+                .path("/api/v1/auth")
+                .maxAge(7 * 24 * 60 * 60)
+                .sameSite("Strict")
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+        String targetUrl = "http://localhost:5173/login-success?code=" + code;
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 }
