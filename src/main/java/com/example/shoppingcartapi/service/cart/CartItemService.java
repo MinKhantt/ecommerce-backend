@@ -1,14 +1,15 @@
 package com.example.shoppingcartapi.service.cart;
 
 import com.example.shoppingcartapi.dto.CartItemDto;
-import com.example.shoppingcartapi.dto.UserDto;
 import com.example.shoppingcartapi.entity.Product;
+import com.example.shoppingcartapi.entity.User;
 import com.example.shoppingcartapi.exception.ResourceNotFoundException;
 import com.example.shoppingcartapi.mapper.CartItemMapper;
 import com.example.shoppingcartapi.entity.Cart;
 import com.example.shoppingcartapi.entity.CartItem;
 import com.example.shoppingcartapi.repository.CartRepository;
 import com.example.shoppingcartapi.repository.ProductRepository;
+import com.example.shoppingcartapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -24,13 +25,20 @@ public class CartItemService implements ICartItemService{
     private final CartRepository cartRepository;
     private final CartItemMapper cartItemMapper;
     private final ProductRepository productRepository;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
-    public CartItemDto addItemToCart(UUID productId, int quantity, UserDto userDto) {
+    public CartItemDto addItemToCart(UUID productId, int quantity, UUID userId) {
 
-        Cart cart = cartRepository.findById(userDto.getCart().getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
+        Cart cart = cartRepository.findByUserId(userId)
+                .orElseGet(() -> {
+                    User user = userRepository.findById(userId)
+                            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                    Cart newCart = new Cart();
+                    newCart.setUser(user);
+                    return cartRepository.save(newCart);
+                });
 
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
@@ -55,12 +63,12 @@ public class CartItemService implements ICartItemService{
 
     @Override
     @Transactional
-    public void updateItemQuantity(UUID productId, int quantity, UserDto userDto) {
+    public void updateItemQuantity(UUID productId, int quantity, UUID userId) {
 
-        Cart cart = cartRepository.findById(userDto.getCart().getId())
+        Cart cart = cartRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
 
-        if (!cart.getUser().getId().equals(userDto.getId())) {
+        if (!cart.getUser().getId().equals(userId)) {
             throw new AccessDeniedException("You do not have permission to modify this cart.");
         }
 
@@ -80,12 +88,12 @@ public class CartItemService implements ICartItemService{
 
     @Override
     @Transactional
-    public void removeItemFromCart(UUID productId, UserDto userDto) {
+    public void removeItemFromCart(UUID productId, UUID userId) {
 
-        Cart cart = cartRepository.findById(userDto.getCart().getId())
+        Cart cart = cartRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
 
-        if (!cart.getUser().getId().equals(userDto.getId())) {
+        if (!cart.getUser().getId().equals(userId)) {
             throw new AccessDeniedException("You do not have permission to modify this cart.");
         }
 
