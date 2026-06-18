@@ -4,9 +4,7 @@ import com.example.shoppingcartapi.dto.ProductDto;
 import com.example.shoppingcartapi.dto.request.AddProductRequest;
 import com.example.shoppingcartapi.dto.request.ProductUpdateRequest;
 import com.example.shoppingcartapi.dto.response.ProductListResponse;
-import com.example.shoppingcartapi.entity.Product;
 
-import java.util.List;
 import java.util.UUID;
 
 public interface IProductService {

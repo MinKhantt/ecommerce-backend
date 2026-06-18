@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
+
 import java.util.UUID;
 
 import static org.springframework.http.HttpStatus.*;
@@ -29,8 +29,8 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<ApiResponse> getAllProducts() {
         log.info("Fetching all products");
-        ProductListResponse productDtoList = productService.getAllProducts();
-        return ResponseEntity.ok(new ApiResponse("success", productDtoList));
+        ProductListResponse productListResponse = productService.getAllProducts();
+        return ResponseEntity.ok(new ApiResponse("success", productListResponse));
     }
 
     @GetMapping("/product/{productId}")
