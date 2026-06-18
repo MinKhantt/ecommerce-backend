@@ -8,7 +8,10 @@ import com.example.shoppingcartapi.enums.PaymentStatus;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public record OrderEmailContext(
     String customerName,
@@ -36,7 +39,13 @@ public record OrderEmailContext(
                 payment.getExternalTransactionId()
             ) : null;
 
-        String customerName = order.getUser().getFirstName() + " " + order.getUser().getLastName();
+        String customerName = Stream.of(order.getUser().getFirstName(), order.getUser().getLastName())
+                .filter(Objects::nonNull)
+                .collect(Collectors.joining(" "))
+                .trim();
+        if (customerName.isEmpty()) {
+            customerName = "Customer";
+        }
 
         return new OrderEmailContext(
             customerName,
