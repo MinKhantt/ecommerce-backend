@@ -1,6 +1,7 @@
-# Shopping Cart API
+# Ecommerce Backend
 
-A Spring Boot learning project I built as a student to practice building a simple eCommerce backend. It covers authentication, products, categories, carts, orders and image uploads with a clean layered structure.
+A Spring Boot learning project I built as a student to practice building a simple eCommerce backend. 
+It covers authentication, products, categories, carts, orders, payments and image uploads with a clean layered structure.
 
 ## What I Practiced
 

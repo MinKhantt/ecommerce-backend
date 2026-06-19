@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.example</groupId>
-	<artifactId>shopping-cart-api</artifactId>
+	<artifactId>ecommerce-backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>shopping-cart-api</name>
-	<description>A simple eCommerce shopping cart api</description>
+	<name>ecommerce-backend</name>
+	<description>Full-featured e-commerce backend API built with Spring Boot</description>
 	<url/>
 	<licenses>
 		<license/>
