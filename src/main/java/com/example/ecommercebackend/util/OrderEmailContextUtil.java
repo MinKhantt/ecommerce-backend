@@ -1,4 +1,4 @@
-package com.example.ecommercebackend.helper;
+package com.example.ecommercebackend.util;
 
 import com.example.ecommercebackend.entity.Order;
 import com.example.ecommercebackend.entity.OrderItem;
@@ -13,7 +13,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public record OrderEmailContext(
+public record OrderEmailContextUtil(
     String customerName,
     UUID orderId,
     LocalDateTime orderDate,
@@ -26,9 +26,9 @@ public record OrderEmailContext(
     public record Item(String productName, String brand, String imageUrl, int quantity, BigDecimal price) {}
     public record PaymentInfo(String method, String status, boolean paid, String transactionId) {}
 
-    public static OrderEmailContext from(Order order, Payment payment) {
+    public static OrderEmailContextUtil from(Order order, Payment payment) {
         List<Item> items = order.getOrderItems().stream()
-            .map(OrderEmailContext::toItem)
+            .map(OrderEmailContextUtil::toItem)
             .toList();
 
         PaymentInfo paymentInfo = payment != null
@@ -47,7 +47,7 @@ public record OrderEmailContext(
             customerName = "Customer";
         }
 
-        return new OrderEmailContext(
+        return new OrderEmailContextUtil(
             customerName,
             order.getId(),
             order.getOrderDate(),

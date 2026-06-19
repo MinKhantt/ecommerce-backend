@@ -1,4 +1,4 @@
-package com.example.ecommercebackend.helper;
+package com.example.ecommercebackend.util;
 
 import com.example.ecommercebackend.dto.request.AddPaymentRequest;
 import com.example.ecommercebackend.dto.response.PaymentIntentResponse;
@@ -28,12 +28,12 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class PaymentHelper {
+public class PaymentUtil {
 
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
     private final ObjectMapper objectMapper;
-    private final MailHelper mailHelper;
+    private final MailUtil mailUtil;
 
     public PaymentIntentResponse handleCodPayment(Order order) {
         Payment payment = createBasePayment(order, PaymentMethod.CASH_ON_DELIVERY, PaymentProvider.NONE);
@@ -42,8 +42,8 @@ public class PaymentHelper {
         paymentRepository.save(payment);
 
         // send mail to user
-        OrderEmailContext ctx = OrderEmailContext.from(order, payment);
-        mailHelper.sendOrderConfirmation(order.getUser().getEmail(), ctx);
+        OrderEmailContextUtil ctx = OrderEmailContextUtil.from(order, payment);
+        mailUtil.sendOrderConfirmation(order.getUser().getEmail(), ctx);
 
         return new PaymentIntentResponse(payment.getId(), null, order.getTotalAmount(), "usd", PaymentStatus.PENDING.name());
     }
@@ -97,8 +97,8 @@ public class PaymentHelper {
         paymentRepository.save(payment);
 
         // send mail to user
-        OrderEmailContext ctx = OrderEmailContext.from(order, payment);
-        mailHelper.sendOrderConfirmation(order.getUser().getEmail(), ctx);
+        OrderEmailContextUtil ctx = OrderEmailContextUtil.from(order, payment);
+        mailUtil.sendOrderConfirmation(order.getUser().getEmail(), ctx);
 
         return new PaymentIntentResponse(payment.getId(), "QR_CODE_URL_OR_DEEP_LINK", order.getTotalAmount(), "usd", PaymentStatus.PENDING.name());
     }
@@ -158,8 +158,8 @@ public class PaymentHelper {
                         log.info("Payment succeeded for order: {}", order.getId());
 
                         // send mail to user
-                        OrderEmailContext ctx = OrderEmailContext.from(order, payment);
-                        mailHelper.sendOrderConfirmation(order.getUser().getEmail(), ctx);
+                        OrderEmailContextUtil ctx = OrderEmailContextUtil.from(order, payment);
+                        mailUtil.sendOrderConfirmation(order.getUser().getEmail(), ctx);
                     });
         } catch (Exception e) {
             log.error("Error handling payment_intent.succeeded: {}", e.getMessage());

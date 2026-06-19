@@ -10,7 +10,7 @@ import com.example.ecommercebackend.enums.OrderStatus;
 import com.example.ecommercebackend.enums.PaymentProvider;
 import com.example.ecommercebackend.enums.PaymentStatus;
 import com.example.ecommercebackend.exception.ResourceNotFoundException;
-import com.example.ecommercebackend.helper.PaymentHelper;
+import com.example.ecommercebackend.util.PaymentUtil;
 import com.example.ecommercebackend.mapper.PaymentMapper;
 import com.example.ecommercebackend.repository.OrderRepository;
 import com.example.ecommercebackend.repository.PaymentRepository;
@@ -37,7 +37,7 @@ public class PaymentService implements IPaymentService {
     private final OrderRepository orderRepository;
     private final PaymentMapper paymentMapper;
     private final StripeConfig stripeConfig;
-    private final PaymentHelper paymentHelper;
+    private final PaymentUtil paymentUtil;
 
     @Override
     public PaymentIntentResponse processPayment(UUID userId, AddPaymentRequest request) {
@@ -52,10 +52,10 @@ public class PaymentService implements IPaymentService {
         }
 
         return switch (PaymentProvider.valueOf(request.getPaymentProvider().toUpperCase())) {
-            case STRIPE -> paymentHelper.createStripePayment(userId, order, request);
-            case K_PAY -> paymentHelper.handleLocalWalletPayment(order, request);
-            case CASH_ON_DELIVERY -> paymentHelper.handleCodPayment(order);
-            default -> paymentHelper.handleCodPayment(order);
+            case STRIPE -> paymentUtil.createStripePayment(userId, order, request);
+            case K_PAY -> paymentUtil.handleLocalWalletPayment(order, request);
+            case CASH_ON_DELIVERY -> paymentUtil.handleCodPayment(order);
+            default -> paymentUtil.handleCodPayment(order);
         };
     }
 
@@ -119,7 +119,7 @@ public class PaymentService implements IPaymentService {
     public void handleWebhookEvent(String payload, String sigHeader) {
         try {
             Event event = Webhook.constructEvent(payload, sigHeader, stripeConfig.getWebhookSecret());
-            paymentHelper.processWebhookEvent(event);
+            paymentUtil.processWebhookEvent(event);
         } catch (Exception e) {
             log.error("Webhook processing error: ", e);
             throw new RuntimeException(e);

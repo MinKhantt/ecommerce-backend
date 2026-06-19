@@ -1,4 +1,4 @@
-package com.example.ecommercebackend.helper;
+package com.example.ecommercebackend.util;
 
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -13,12 +13,12 @@ import org.thymeleaf.context.Context;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class MailHelper {
+public class MailUtil {
     private final JavaMailSender mailSender;
     private final ITemplateEngine templateEngine;
 
     @Async
-    public void sendOrderConfirmation(String toEmail, OrderEmailContext ctx) {
+    public void sendOrderConfirmation(String toEmail, OrderEmailContextUtil ctx) {
         try {
             Context context = new Context();
             context.setVariable("ctx", ctx);
