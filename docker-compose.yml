@@ -1,0 +1,10 @@
+services:
+  app:
+    build:
+      context: .
+    image: ecommerce-backend:latest
+    container_name: ecommerce-backend
+    ports:
+      - "${SERVER_PORT}:${SERVER_PORT}"
+    env_file:
+      - .env.prod
