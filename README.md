@@ -21,6 +21,7 @@ It covers authentication, products, categories, carts, orders, payments and imag
 - Redis
 - Cloudinary
 - Stripe
+- Springdoc OpenAPI (Swagger UI)
 - Lombok, ModelMapper, Jakarta Validation
 
 ## Project Structure
@@ -134,4 +135,5 @@ Run the app
 ## Notes
 
 This is my Spring Boot learning project.
-I plan to add unit tests and Swagger/OpenAPI docs next.
+Swagger/OpenAPI docs are available at `/docs`.
+I plan to add unit tests next.
