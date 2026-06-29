@@ -49,7 +49,7 @@ public class UserController {
 
     @PutMapping("/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse> updateUser(@RequestBody UserUpdateRequest request, @PathVariable UUID userId) {
+    public ResponseEntity<ApiResponse> updateUser(@Valid @RequestBody UserUpdateRequest request, @PathVariable UUID userId) {
         UserDto userDto = userService.updateUser(request, userId);
         return ResponseEntity.ok(new ApiResponse("User updated successfully", userDto));
     }

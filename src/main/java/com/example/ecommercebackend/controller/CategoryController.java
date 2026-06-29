@@ -5,6 +5,7 @@ import com.example.ecommercebackend.dto.request.AddCategoryRequest;
 import com.example.ecommercebackend.dto.request.CategoryUpdateRequest;
 import com.example.ecommercebackend.dto.response.ApiResponse;
 import com.example.ecommercebackend.service.category.ICategoryService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,7 +28,7 @@ public class CategoryController {
 
     @PostMapping()
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse> addCategory(@RequestBody AddCategoryRequest name) {
+    public ResponseEntity<ApiResponse> addCategory(@Valid @RequestBody AddCategoryRequest name) {
         CategoryDto categoryDto = categoryService.addCategory(name);
         return ResponseEntity.ok(new ApiResponse("Success", categoryDto));
     }
@@ -55,7 +56,7 @@ public class CategoryController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> updateCategoryById(
             @PathVariable UUID id,
-            @RequestBody CategoryUpdateRequest request
+            @Valid @RequestBody CategoryUpdateRequest request
     ) {
         CategoryDto updatedCategoryDto = categoryService.updateCategory(request, id);
         return ResponseEntity.ok(new ApiResponse("Update Success", updatedCategoryDto));

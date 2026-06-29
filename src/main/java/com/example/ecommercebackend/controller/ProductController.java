@@ -6,6 +6,7 @@ import com.example.ecommercebackend.dto.request.ProductUpdateRequest;
 import com.example.ecommercebackend.dto.response.ApiResponse;
 import com.example.ecommercebackend.dto.response.ProductListResponse;
 import com.example.ecommercebackend.service.product.IProductService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -40,7 +41,7 @@ public class ProductController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<ApiResponse> createProduct(@RequestBody AddProductRequest request) {
+    public ResponseEntity<ApiResponse> createProduct(@Valid @RequestBody AddProductRequest request) {
         log.info("Received request to create product: {}", request.getName());
         ProductDto productDto = productService.createProduct(request);
         return ResponseEntity.ok(new ApiResponse("Create product success", productDto));
@@ -49,7 +50,7 @@ public class ProductController {
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/product/{productId}")
     public ResponseEntity<ApiResponse> updateProduct(
-            @RequestBody ProductUpdateRequest request,
+            @Valid @RequestBody ProductUpdateRequest request,
             @PathVariable UUID productId
     ) {
         log.info("Updating product with id {}", productId);

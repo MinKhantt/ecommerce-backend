@@ -38,7 +38,7 @@ public class AuthController {
     private final StringRedisTemplate redisTemplate;
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse> register(@RequestBody CreateUserRequest request) {
+    public ResponseEntity<ApiResponse> register(@Valid @RequestBody CreateUserRequest request) {
         UserDto userDto = userService.createUser(request);
         return ResponseEntity.ok(new ApiResponse("Registration Successful", userDto));
     }
