@@ -116,24 +116,95 @@ Users (`/users`)
 
 ## Getting Started
 
-Prerequisites
-- JDK 25
-- Postgres
+### Prerequisites
+- Java 21
+- Docker & Docker Compose
+- [Neon PostgreSQL](https://neon.tech) database (free tier) or local postgreSQL driver
+- [Redis Cloud](https://redis.com/try-free) instance (free 30MB tier)
 
-Configure database
-- Edit `src/main/resources/application.properties` with your Postgres URL, username, and password.
+### Setup
 
-Configure Stripe
-- Set `STRIPE_API_KEY` and `STRIPE_WEBHOOK_SECRET` in your `.env` file.
-- In test mode, use the Stripe CLI to forward webhooks: `stripe listen --forward-to localhost:{port}/api/v1/payments/webhook`
+1. Clone the repo:
+   ```bash
+   git clone <your-repo-url>
+   cd ecommerce-backend
+   ```
 
-Run the app
+2. Copy `.env.example` to `.env.prod` and fill in your credentials:
+   ```bash
+   cp .env.example .env.prod
+   ```
+
+3. Run with Docker Compose:
+   ```bash
+   docker compose up --build
+   ```
+
+   The app starts at `http://localhost:9000`.
+
+### Running without Docker
+
 ```bash
 ./mvnw spring-boot:run
 ```
 
+---
+
+## Docker
+
+The project includes ready-to-use Docker configuration:
+
+| File | Purpose |
+|---|---|
+| `Dockerfile` | Multi-stage build — Maven compiles the app, then JRE runs the JAR |
+| `.dockerignore` | Excludes `.git/`, `target/`, `.env*`, `docs/` from the build context |
+| `docker-compose.yml` | Runs the app with env vars loaded from `.env.prod` |
+
+### Build & Run
+
+```bash
+docker compose up --build
+```
+
+To run in the background:
+```bash
+docker compose up --build -d
+```
+
+---
+
+## Redis Cloud
+
+This app uses Redis for caching. Sign up for a free 30MB instance at [redis.com/try-free](https://redis.com/try-free).
+
+Once created, configure these in `.env.prod`:
+
+```env
+REDIS_HOST=your_redis_host
+REDIS_PORT=your_redis_port 
+REDIS_PASSWORD=your_redis_password
+```
+
+The host and port are shown in your Redis Cloud dashboard under **Public Endpoint**.
+
+---
+
+## Deploy to Render
+
+1. Push the repo to GitHub
+2. [Render Dashboard](https://dashboard.render.com) → **New Web Service** → Connect your repo
+3. Runtime: **Docker** (auto-detected from `Dockerfile`)
+4. Set all environment variables from `.env.prod` in Render's dashboard (do not commit them)
+5. Port: **9000**
+6. Deploy — your app will be live at `https://your-app.onrender.com`
+7. Swagger docs at `https://your-app.onrender.com/docs`
+
+Render builds using the Dockerfile — no docker-compose.yml needed on Render.
+
+---
+
 ## Notes
 
-This is my Spring Boot learning project.
-Swagger/OpenAPI docs are available at `/docs`.
-I plan to add unit tests next.
+- This is my Spring Boot learning project.
+- Swagger/OpenAPI docs are available at `/docs`.
+- I plan to add unit tests next.

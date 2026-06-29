@@ -37,3 +37,6 @@ build/
 .env.prod
 
 docs/*
+
+AGENTS.md
+opencode.json
