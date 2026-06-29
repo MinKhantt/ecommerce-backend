@@ -2,6 +2,7 @@ package com.example.ecommercebackend.exception;
 
 import com.example.ecommercebackend.dto.response.ApiResponse;
 import io.jsonwebtoken.JwtException;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -110,5 +111,10 @@ public class GlobalExceptionHandler {
                 .body(new ApiResponse("An unexpected error occurred", null));
     }
 
-
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiResponse> handleConstraintViolation(ConstraintViolationException ex) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse("Invalid input: quantity must be at least 1.", null));
+    }
 }
