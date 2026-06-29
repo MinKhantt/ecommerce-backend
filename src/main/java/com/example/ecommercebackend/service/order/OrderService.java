@@ -68,16 +68,11 @@ public class OrderService implements IOrderService{
                 .map(cartItem -> {
                     Product product = cartItem.getProduct();
 
-                    // validate Stock
                     if (product.getInventory() < cartItem.getQuantity()) {
-                        throw new RuntimeException("Insufficient stock for product: " + product.getName());
-                    }
+                    throw new RuntimeException("Insufficient stock for product: " + product.getName());
+                }
 
-                    // Reduce Stock
-                    product.setInventory(product.getInventory() - cartItem.getQuantity());
-                    productRepository.save(product);
-
-                    return new OrderItem(order, product, cartItem.getQuantity(), cartItem.getUnitPrice());
+                return new OrderItem(order, product, cartItem.getQuantity(), cartItem.getUnitPrice());
                 }).toList();
     }
 

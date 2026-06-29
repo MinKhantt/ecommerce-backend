@@ -4,12 +4,14 @@ import com.example.ecommercebackend.dto.request.AddPaymentRequest;
 import com.example.ecommercebackend.dto.response.PaymentIntentResponse;
 import com.example.ecommercebackend.entity.Order;
 import com.example.ecommercebackend.entity.Payment;
+import com.example.ecommercebackend.entity.Product;
 import com.example.ecommercebackend.enums.OrderStatus;
 import com.example.ecommercebackend.enums.PaymentMethod;
 import com.example.ecommercebackend.enums.PaymentProvider;
 import com.example.ecommercebackend.enums.PaymentStatus;
 import com.example.ecommercebackend.repository.OrderRepository;
 import com.example.ecommercebackend.repository.PaymentRepository;
+import com.example.ecommercebackend.repository.ProductRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stripe.exception.StripeException;
@@ -32,6 +34,7 @@ public class PaymentUtil {
 
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
+    private final ProductRepository productRepository;
     private final ObjectMapper objectMapper;
     private final MailUtil mailUtil;
 
@@ -40,6 +43,7 @@ public class PaymentUtil {
         payment.setPaymentStatus(PaymentStatus.PENDING);
         payment.setCurrency("MMK");
         paymentRepository.save(payment);
+        reduceStock(order);
 
         // send mail to user
         OrderEmailContextUtil ctx = OrderEmailContextUtil.from(order, payment);
@@ -95,6 +99,7 @@ public class PaymentUtil {
         payment.setPaymentStatus(PaymentStatus.PENDING);
         payment.setCurrency("MMK");
         paymentRepository.save(payment);
+        reduceStock(order);
 
         // send mail to user
         OrderEmailContextUtil ctx = OrderEmailContextUtil.from(order, payment);
@@ -113,6 +118,18 @@ public class PaymentUtil {
         payment.setPaymentDate(LocalDateTime.now());
         payment.setCurrency("usd");
         return payment;
+    }
+
+    private void reduceStock(Order order) {
+        order.getOrderItems().forEach(orderItem -> {
+            Product product = orderItem.getProduct();
+            if (product.getInventory() < orderItem.getQuantity()) {
+                log.warn("Insufficient stock for product {} when processing payment for order {}", product.getName(), order.getId());
+                throw new RuntimeException("Insufficient stock for product: " + product.getName());
+            }
+            product.setInventory(product.getInventory() - orderItem.getQuantity());
+            productRepository.save(product);
+        });
     }
 
     @Transactional
@@ -155,6 +172,7 @@ public class PaymentUtil {
                         Order order = payment.getOrder();
                         order.setOrderStatus(OrderStatus.PROCESSING);
                         orderRepository.save(order);
+                        reduceStock(order);
                         log.info("Payment succeeded for order: {}", order.getId());
 
                         // send mail to user
