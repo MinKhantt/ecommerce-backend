@@ -21,9 +21,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("${api.prefix}/images")
@@ -37,13 +34,8 @@ public class ImageController {
             @RequestParam List<MultipartFile> file,
             @RequestParam UUID productId
     ) {
-        try {
-            List<ImageDto> imageDto = imageService.uploadImage(file, productId);
-            return ResponseEntity.ok(new ApiResponse("Upload success!", imageDto));
-        } catch (Exception e) {
-            return ResponseEntity.status(INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse("Upload failed!", e.getMessage()));
-        }
+        List<ImageDto> imageDto = imageService.uploadImage(file, productId);
+        return ResponseEntity.ok(new ApiResponse("Upload success!", imageDto));
     }
 
     @GetMapping("/view/{imageId}")
@@ -81,22 +73,12 @@ public class ImageController {
             @RequestParam MultipartFile file
     ) {
         if (file == null || file.isEmpty()) {
-            return ResponseEntity.badRequest().body(new ApiResponse("No file provided!", null));
+            throw new IllegalArgumentException("No file provided");
         }
 
-        try {
-            ImageDto imageDto = imageService.getImageById(imageId);
-
-            if (imageDto != null) {
-                imageService.updateImage(file, imageId);
-                return ResponseEntity.ok(new ApiResponse("Update Success!", null));
-            }
-        } catch (ResourceNotFoundException e) {
-            return ResponseEntity.status(NOT_FOUND)
-                    .body(new ApiResponse(e.getMessage(), null));
-        }
-        return ResponseEntity.status(INTERNAL_SERVER_ERROR)
-                .body(new ApiResponse("Delete failed!", INTERNAL_SERVER_ERROR));
+        imageService.getImageById(imageId);
+        imageService.updateImage(file, imageId);
+        return ResponseEntity.ok(new ApiResponse("Update Success!", null));
     }
 
     @DeleteMapping("/{imageId}")
@@ -104,18 +86,8 @@ public class ImageController {
     public ResponseEntity<ApiResponse> deleteImage(
             @PathVariable UUID imageId
     ) {
-        try {
-            ImageDto imageDto = imageService.getImageById(imageId);
-
-            if (imageDto != null) {
-                imageService.deleteImageById(imageId);
-                return ResponseEntity.ok(new ApiResponse("Delete Success!", null));
-            }
-        } catch (ResourceNotFoundException e) {
-            return ResponseEntity.status(NOT_FOUND)
-                    .body(new ApiResponse(e.getMessage(), null));
-        }
-        return ResponseEntity.status(INTERNAL_SERVER_ERROR)
-                .body(new ApiResponse("Delete failed!", INTERNAL_SERVER_ERROR));
+        imageService.getImageById(imageId);
+        imageService.deleteImageById(imageId);
+        return ResponseEntity.ok(new ApiResponse("Delete Success!", null));
     }
 }

@@ -5,7 +5,6 @@ import com.example.ecommercebackend.dto.request.CreateUserRequest;
 import com.example.ecommercebackend.dto.request.LoginRequest;
 import com.example.ecommercebackend.dto.response.ApiResponse;
 import com.example.ecommercebackend.dto.response.JwtResponse;
-import com.example.ecommercebackend.exception.ResourceNotFoundException;
 import com.example.ecommercebackend.security.jwt.JwtUtils;
 import com.example.ecommercebackend.security.user.ShopUserDetails;
 import com.example.ecommercebackend.security.user.ShopUserDetailsService;
@@ -21,7 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,45 +45,39 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse> login(@Valid @RequestBody LoginRequest request) {
-        try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getEmail(),
-                            request.getPassword()
-                    )
-            );
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()
+                )
+        );
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            String accessToken  = jwtUtils.generateAccessToken(authentication);
-            String refreshToken = jwtUtils.generateRefreshToken(authentication);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String accessToken  = jwtUtils.generateAccessToken(authentication);
+        String refreshToken = jwtUtils.generateRefreshToken(authentication);
 
-            String tokenId = jwtUtils.extractTokenId(refreshToken);
-            redisTemplate.opsForValue().set(
-                    "refresh:" + tokenId,
-                    refreshToken,
-                    30,
-                    TimeUnit.DAYS
-            );
+        String tokenId = jwtUtils.extractTokenId(refreshToken);
+        redisTemplate.opsForValue().set(
+                "refresh:" + tokenId,
+                refreshToken,
+                30,
+                TimeUnit.DAYS
+        );
 
-            ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
-                    .httpOnly(true)
-                    .secure(false)
-                    .path("/api/v1/auth")
-                    .maxAge(7 * 24 * 60 * 60)
-                    .sameSite("Strict")
-                    .build();
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
+                .httpOnly(true)
+                .secure(false)
+                .path("/api/v1/auth")
+                .maxAge(7 * 24 * 60 * 60)
+                .sameSite("Strict")
+                .build();
 
-            ShopUserDetails userDetails = (ShopUserDetails) authentication.getPrincipal();
-            JwtResponse jwtResponse = new JwtResponse(userDetails.getId(), accessToken);
+        ShopUserDetails userDetails = (ShopUserDetails) authentication.getPrincipal();
+        JwtResponse jwtResponse = new JwtResponse(userDetails.getId(), accessToken);
 
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                    .body(new ApiResponse("Login Successful", jwtResponse));
-        } catch (AuthenticationException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                    new ApiResponse(e.getMessage(), null)
-            );
-        }
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(new ApiResponse("Login Successful", jwtResponse));
     }
 
     @PostMapping("/refresh")
@@ -98,56 +90,45 @@ public class AuthController {
                     .body(new ApiResponse("Refresh Token Not Valid or Expired", null));
         }
 
-        try {
-            String oldTokenId = jwtUtils.extractTokenId(refreshToken);
+        String oldTokenId = jwtUtils.extractTokenId(refreshToken);
 
-            if (!redisTemplate.hasKey("refresh:" + oldTokenId)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new ApiResponse("Refresh token has been revoked, please login again", null));
-            }
-
-            String email = jwtUtils.extractUsername(refreshToken);
-
-            ShopUserDetails userDetails = (ShopUserDetails) shopUserDetailsService.loadUserByUsername(email);
-
-            Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
-            String newAccessToken = jwtUtils.generateAccessToken(authentication);
-            String newRefreshToken = jwtUtils.generateRefreshToken(authentication);
-
-            redisTemplate.delete("refresh:" + oldTokenId);
-
-            String newTokenId = jwtUtils.extractTokenId(newRefreshToken);
-            redisTemplate.opsForValue().set(
-                    "refresh:" + newTokenId,
-                    newRefreshToken,
-                    30,
-                    TimeUnit.DAYS
-            );
-
-            ResponseCookie cookie = ResponseCookie.from("refreshToken", newRefreshToken)
-                    .httpOnly(true)
-                    .secure(false)
-                    .path("/api/v1/auth")
-                    .maxAge(7 * 24 * 60 * 60)
-                    .sameSite("Strict")
-                    .build();
-
-            JwtResponse jwtResponse = new JwtResponse(userDetails.getId(), newAccessToken);
-
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                    .body(new ApiResponse("Refresh Successful", jwtResponse));
-
-        } catch (ResourceNotFoundException e) {
-            log.error("Refresh failed: User no longer exists. {}", e.getMessage());
+        if (!redisTemplate.hasKey("refresh:" + oldTokenId)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ApiResponse("User account not found", null));
-        } catch (Exception e) {
-            log.error("Unexpected error during token refresh", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse("An error occurred during token processing", null));
+                    .body(new ApiResponse("Refresh token has been revoked, please login again", null));
         }
+
+        String email = jwtUtils.extractUsername(refreshToken);
+
+        ShopUserDetails userDetails = (ShopUserDetails) shopUserDetailsService.loadUserByUsername(email);
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
+        String newAccessToken = jwtUtils.generateAccessToken(authentication);
+        String newRefreshToken = jwtUtils.generateRefreshToken(authentication);
+
+        redisTemplate.delete("refresh:" + oldTokenId);
+
+        String newTokenId = jwtUtils.extractTokenId(newRefreshToken);
+        redisTemplate.opsForValue().set(
+                "refresh:" + newTokenId,
+                newRefreshToken,
+                30,
+                TimeUnit.DAYS
+        );
+
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", newRefreshToken)
+                .httpOnly(true)
+                .secure(false)
+                .path("/api/v1/auth")
+                .maxAge(7 * 24 * 60 * 60)
+                .sameSite("Strict")
+                .build();
+
+        JwtResponse jwtResponse = new JwtResponse(userDetails.getId(), newAccessToken);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(new ApiResponse("Refresh Successful", jwtResponse));
     }
 
     @PostMapping("/logout")

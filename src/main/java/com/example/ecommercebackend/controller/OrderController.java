@@ -4,12 +4,10 @@ import com.example.ecommercebackend.dto.OrderDto;
 import com.example.ecommercebackend.dto.UserDto;
 import com.example.ecommercebackend.dto.request.AddOrderRequest;
 import com.example.ecommercebackend.dto.response.ApiResponse;
-import com.example.ecommercebackend.exception.ResourceNotFoundException;
 import com.example.ecommercebackend.service.order.IOrderService;
 import com.example.ecommercebackend.service.user.IUserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -27,14 +25,9 @@ public class OrderController {
     public ResponseEntity<ApiResponse> createOrder(
             @Valid @RequestBody AddOrderRequest request
             ) {
-        try {
-            UserDto user = userService.getAuthenticatedUser();
-            OrderDto order = orderService.placeOrder(user.getId(), request.getShippingAddress());
-            return ResponseEntity.ok(new ApiResponse("Order created successfully", order));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse(e.getMessage(), null));
-        }
+        UserDto user = userService.getAuthenticatedUser();
+        OrderDto order = orderService.placeOrder(user.getId(), request.getShippingAddress());
+        return ResponseEntity.ok(new ApiResponse("Order created successfully", order));
     }
 
     @GetMapping()
@@ -46,50 +39,30 @@ public class OrderController {
 
     @GetMapping("/{orderId}")
     public ResponseEntity<ApiResponse> getOrderById(@PathVariable UUID orderId) {
-        try {
-            UserDto user = userService.getAuthenticatedUser();
-            OrderDto order = orderService.getOrderById(orderId, user.getId());
-            return ResponseEntity.ok(new ApiResponse("Success", order));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ApiResponse(e.getMessage(), null));
-        }
+        UserDto user = userService.getAuthenticatedUser();
+        OrderDto order = orderService.getOrderById(orderId, user.getId());
+        return ResponseEntity.ok(new ApiResponse("Success", order));
     }
 
     @GetMapping("/admin/{orderId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> getOrderByIdForAdmin(@PathVariable UUID orderId) {
-        try {
-            OrderDto order = orderService.getOrderByIdForAdmin(orderId);
-            return ResponseEntity.ok(new ApiResponse("Success", order));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ApiResponse(e.getMessage(), null));
-        }
+        OrderDto order = orderService.getOrderByIdForAdmin(orderId);
+        return ResponseEntity.ok(new ApiResponse("Success", order));
     }
 
     @GetMapping("/my-orders")
     public ResponseEntity<ApiResponse> getMyOrders() {
-        try {
-            UserDto user = userService.getAuthenticatedUser();
-            List<OrderDto> order = orderService.getUserOrders(user.getId());
-            return ResponseEntity.ok(new ApiResponse("Item order success", order));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse(e.getMessage(), null));
-        }
+        UserDto user = userService.getAuthenticatedUser();
+        List<OrderDto> order = orderService.getUserOrders(user.getId());
+        return ResponseEntity.ok(new ApiResponse("Item order success", order));
     }
 
     @DeleteMapping("/{orderId}")
     public ResponseEntity<ApiResponse> cancelOrder(@PathVariable UUID orderId) {
-        try {
-            UserDto user = userService.getAuthenticatedUser();
-            orderService.cancelOrder(orderId, user.getId());
-            return ResponseEntity.ok(new ApiResponse("Order cancelled successfully", null));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse(e.getMessage(), null));
-        }
+        UserDto user = userService.getAuthenticatedUser();
+        orderService.cancelOrder(orderId, user.getId());
+        return ResponseEntity.ok(new ApiResponse("Order cancelled successfully", null));
     }
 
     @PatchMapping("/{orderId}/order-status")
@@ -98,18 +71,7 @@ public class OrderController {
             @PathVariable UUID orderId,
             @RequestParam String status
     ) {
-        try {
-            OrderDto order = orderService.updateOrderStatus(orderId, status);
-            return ResponseEntity.ok(new ApiResponse("Order status updated to " + status, order));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse("Invalid status provided", null));
-        } catch (ResourceNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ApiResponse(e.getMessage(), null));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse("An unexpected error occurred", null));
-        }
+        OrderDto order = orderService.updateOrderStatus(orderId, status);
+        return ResponseEntity.ok(new ApiResponse("Order status updated to " + status, order));
     }
 }

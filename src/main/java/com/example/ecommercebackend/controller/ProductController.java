@@ -5,8 +5,6 @@ import com.example.ecommercebackend.dto.request.AddProductRequest;
 import com.example.ecommercebackend.dto.request.ProductUpdateRequest;
 import com.example.ecommercebackend.dto.response.ApiResponse;
 import com.example.ecommercebackend.dto.response.ProductListResponse;
-import com.example.ecommercebackend.exception.AlreadyExistsException;
-import com.example.ecommercebackend.exception.ResourceNotFoundException;
 import com.example.ecommercebackend.service.product.IProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,29 +33,17 @@ public class ProductController {
 
     @GetMapping("/product/{productId}")
     public ResponseEntity<ApiResponse> getProductById(@PathVariable UUID productId) {
-        try {
-            log.info("Fetching product with id: {}", productId);
-            ProductDto productDto = productService.getProductById(productId);
-            return ResponseEntity.ok(new ApiResponse("success", productDto));
-        } catch (ResourceNotFoundException e) {
-            log.warn("Product with id: {} not found", productId);
-            return ResponseEntity.status(NOT_FOUND)
-                    .body(new ApiResponse(e.getMessage(), null));
-        }
+        log.info("Fetching product with id: {}", productId);
+        ProductDto productDto = productService.getProductById(productId);
+        return ResponseEntity.ok(new ApiResponse("success", productDto));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<ApiResponse> createProduct(@RequestBody AddProductRequest request) {
         log.info("Received request to create product: {}", request.getName());
-        try {
-            ProductDto productDto = productService.createProduct(request);
-            return ResponseEntity.ok(new ApiResponse("Create product success", productDto));
-        } catch (AlreadyExistsException e) {
-            log.warn("Product with name={} and brand={} already exists", request.getName(), request.getBrand());
-            return ResponseEntity.status(CONFLICT)
-                    .body(new ApiResponse(e.getMessage(), null));
-        }
+        ProductDto productDto = productService.createProduct(request);
+        return ResponseEntity.ok(new ApiResponse("Create product success", productDto));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -66,15 +52,9 @@ public class ProductController {
             @RequestBody ProductUpdateRequest request,
             @PathVariable UUID productId
     ) {
-        try {
-            log.info("Updating product with id {}", productId);
-            ProductDto productDto = productService.updateProduct(request, productId);
-            return ResponseEntity.ok(new ApiResponse("Update success", productDto));
-        } catch (ResourceNotFoundException e) {
-            log.warn("Product with id: {} not found during update", productId);
-            return ResponseEntity.status(NOT_FOUND)
-                    .body(new ApiResponse(e.getMessage(), null));
-        }
+        log.info("Updating product with id {}", productId);
+        ProductDto productDto = productService.updateProduct(request, productId);
+        return ResponseEntity.ok(new ApiResponse("Update success", productDto));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -82,15 +62,9 @@ public class ProductController {
     public ResponseEntity<ApiResponse> deleteProduct(
             @PathVariable UUID productId
     ) {
-        try {
-            log.info("Deleting product with id {}", productId);
-            productService.deleteProductById(productId);
-            return ResponseEntity.ok(new ApiResponse("Delete success", productId));
-        } catch (ResourceNotFoundException e) {
-            log.warn("Product with id {} not found during delete", productId);
-            return ResponseEntity.status(NOT_FOUND)
-                    .body(new ApiResponse(e.getMessage(), null));
-        }
+        log.info("Deleting product with id {}", productId);
+        productService.deleteProductById(productId);
+        return ResponseEntity.ok(new ApiResponse("Delete success", productId));
     }
 
     // Brand & Name
@@ -99,21 +73,15 @@ public class ProductController {
             @RequestParam String brand,
             @RequestParam String name
     ) {
-        try {
-            log.info("Fetching products by brand={} and name={}", brand, name);
-            ProductListResponse productDtoList = productService.getProductByBrandAndName(brand, name);
+        log.info("Fetching products by brand={} and name={}", brand, name);
+        ProductListResponse productDtoList = productService.getProductByBrandAndName(brand, name);
 
-            if (productDtoList.getProducts().isEmpty()) {
-                log.warn("No products found for brand={} and name={}", brand, name);
-                return ResponseEntity.status(NOT_FOUND)
-                        .body(new ApiResponse("No Products found!", null));
-            }
-            return ResponseEntity.ok(new ApiResponse("success", productDtoList));
-        } catch (Exception e) {
-            log.error("Unexpected error while fetching products by brand={} and name={}", brand, name, e);
-            return ResponseEntity.status(INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse(e.getMessage(), null));
+        if (productDtoList.getProducts().isEmpty()) {
+            log.warn("No products found for brand={} and name={}", brand, name);
+            return ResponseEntity.status(NOT_FOUND)
+                    .body(new ApiResponse("No Products found!", null));
         }
+        return ResponseEntity.ok(new ApiResponse("success", productDtoList));
     }
 
     // Category & Brand
@@ -122,22 +90,16 @@ public class ProductController {
             @RequestParam  String category,
             @RequestParam  String brand
     ) {
-        try {
-            log.info("Fetching products by category={} and brand={}", category, brand);
-            ProductListResponse productDtoList = productService.getProductsByCategoryAndBrand(category, brand);
+        log.info("Fetching products by category={} and brand={}", category, brand);
+        ProductListResponse productDtoList = productService.getProductsByCategoryAndBrand(category, brand);
 
-            if (productDtoList.getProducts().isEmpty()) {
-                log.warn("No products found for category={} and brand={}", category, brand);
-                return ResponseEntity.status(NOT_FOUND)
-                        .body(new ApiResponse("No Products found!", null));
-            }
-
-            return ResponseEntity.ok(new ApiResponse("success", productDtoList));
-        } catch (Exception e) {
-            log.error("Unexpected error while fetching products by category={} and brand={}", category, brand, e);
-            return ResponseEntity.status(INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse(e.getMessage(), null));
+        if (productDtoList.getProducts().isEmpty()) {
+            log.warn("No products found for category={} and brand={}", category, brand);
+            return ResponseEntity.status(NOT_FOUND)
+                    .body(new ApiResponse("No Products found!", null));
         }
+
+        return ResponseEntity.ok(new ApiResponse("success", productDtoList));
     }
 
     // Name
@@ -145,22 +107,16 @@ public class ProductController {
     public ResponseEntity<ApiResponse> getProductByName(
             @RequestParam  String name
     ) {
-        try {
-            log.info("Fetching products by name={}", name);
-            ProductListResponse productDtoList = productService.getProductByName(name);
+        log.info("Fetching products by name={}", name);
+        ProductListResponse productDtoList = productService.getProductByName(name);
 
-            if (productDtoList.getProducts().isEmpty()) {
-                log.warn("No products found for name={}", name);
-                return ResponseEntity.status(NOT_FOUND)
-                        .body(new ApiResponse("No Products found!", null));
-            }
-
-            return ResponseEntity.ok(new ApiResponse("success", productDtoList));
-        } catch (Exception e) {
-            log.error("Unexpected error while fetching products by name={}", name, e);
-            return ResponseEntity.status(INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse(e.getMessage(), null));
+        if (productDtoList.getProducts().isEmpty()) {
+            log.warn("No products found for name={}", name);
+            return ResponseEntity.status(NOT_FOUND)
+                    .body(new ApiResponse("No Products found!", null));
         }
+
+        return ResponseEntity.ok(new ApiResponse("success", productDtoList));
     }
 
     // Brand
@@ -168,22 +124,16 @@ public class ProductController {
     public ResponseEntity<ApiResponse> getProductsByBrand(
             @RequestParam String brand
     ) {
-        try {
-            log.info("Fetching products by brand={}", brand);
-            ProductListResponse productDtoList = productService.getProductsByBrand(brand);
+        log.info("Fetching products by brand={}", brand);
+        ProductListResponse productDtoList = productService.getProductsByBrand(brand);
 
-            if (productDtoList.getProducts().isEmpty()) {
-                log.warn("No products found for brand={}", brand);
-                return ResponseEntity.status(NOT_FOUND)
-                        .body(new ApiResponse("No Products found!", null));
-            }
-
-            return ResponseEntity.ok(new ApiResponse("success", productDtoList));
-        } catch (Exception e) {
-            log.error("Unexpected error while fetching products by brand={}", brand, e);
-            return ResponseEntity.status(INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse(e.getMessage(), null));
+        if (productDtoList.getProducts().isEmpty()) {
+            log.warn("No products found for brand={}", brand);
+            return ResponseEntity.status(NOT_FOUND)
+                    .body(new ApiResponse("No Products found!", null));
         }
+
+        return ResponseEntity.ok(new ApiResponse("success", productDtoList));
     }
 
     // Category
@@ -191,22 +141,16 @@ public class ProductController {
     public ResponseEntity<ApiResponse> getProductsByCategory(
             @RequestParam String category
     ) {
-        try {
-            log.info("Fetching products by category={}", category);
-            ProductListResponse productDtoList = productService.getProductsByCategory(category);
+        log.info("Fetching products by category={}", category);
+        ProductListResponse productDtoList = productService.getProductsByCategory(category);
 
-            if (productDtoList.getProducts().isEmpty()) {
-                log.warn("No products found for category={}", category);
-                return ResponseEntity.status(NOT_FOUND)
-                        .body(new ApiResponse("No Products found!", null));
-            }
-
-            return ResponseEntity.ok(new ApiResponse("success", productDtoList));
-        } catch (Exception e) {
-            log.error("Unexpected error while fetching products by category={}", category, e);
-            return ResponseEntity.status(INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse(e.getMessage(), null));
+        if (productDtoList.getProducts().isEmpty()) {
+            log.warn("No products found for category={}", category);
+            return ResponseEntity.status(NOT_FOUND)
+                    .body(new ApiResponse("No Products found!", null));
         }
+
+        return ResponseEntity.ok(new ApiResponse("success", productDtoList));
     }
 
     // Brand & Name
@@ -215,14 +159,8 @@ public class ProductController {
             @RequestParam String brand,
             @RequestParam String name
     ) {
-        try {
-            log.info("Counting products by brand={} and name={}", brand, name);
-            var productCount = productService.countProductsByBrandAndName(brand, name);
-            return ResponseEntity.ok(new ApiResponse("Product Count!", productCount));
-        } catch (Exception e) {
-            log.error("Unexpected error while counting products by brand={} and name={}", brand, name, e);
-            return ResponseEntity.status(INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse(e.getMessage(), null));
-        }
+        log.info("Counting products by brand={} and name={}", brand, name);
+        var productCount = productService.countProductsByBrandAndName(brand, name);
+        return ResponseEntity.ok(new ApiResponse("Product Count!", productCount));
     }
 }
