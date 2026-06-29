@@ -1,6 +1,7 @@
 package com.example.ecommercebackend.service.user;
 
 import com.example.ecommercebackend.dto.UserDto;
+import com.example.ecommercebackend.dto.UserSummaryDto;
 import com.example.ecommercebackend.dto.request.CreateUserRequest;
 import com.example.ecommercebackend.dto.request.UserUpdateRequest;
 import com.example.ecommercebackend.dto.response.UserListResponse;
@@ -21,5 +22,5 @@ public interface IUserService {
 
     void deleteUser(UUID userId);
 
-    UserDto getAuthenticatedUser();
+    UserSummaryDto getAuthenticatedUser();
 }

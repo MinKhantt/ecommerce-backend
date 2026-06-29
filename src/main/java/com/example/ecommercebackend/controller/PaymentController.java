@@ -2,6 +2,7 @@ package com.example.ecommercebackend.controller;
 
 import com.example.ecommercebackend.dto.PaymentDto;
 import com.example.ecommercebackend.dto.UserDto;
+import com.example.ecommercebackend.dto.UserSummaryDto;
 import com.example.ecommercebackend.dto.request.AddPaymentRequest;
 import com.example.ecommercebackend.dto.response.ApiResponse;
 import com.example.ecommercebackend.dto.response.PaymentIntentResponse;
@@ -28,21 +29,21 @@ public class PaymentController {
 
     @PostMapping("/create-intent")
     public ResponseEntity<ApiResponse> processPayment(@Valid @RequestBody AddPaymentRequest request) {
-        UserDto user = userService.getAuthenticatedUser();
+        UserSummaryDto user = userService.getAuthenticatedUser();
         PaymentIntentResponse response = paymentService.processPayment(user.getId(), request);
         return ResponseEntity.ok(new ApiResponse("Payment intent created", response));
     }
 
     @GetMapping("/my-payments")
     public ResponseEntity<ApiResponse> getUserPayments() {
-        UserDto user = userService.getAuthenticatedUser();
+        UserSummaryDto user = userService.getAuthenticatedUser();
         List<PaymentDto> payments = paymentService.getUserPayments(user.getId());
         return ResponseEntity.ok(new ApiResponse("Payments retrieved", payments));
     }
 
     @GetMapping("/{paymentId}")
     public ResponseEntity<ApiResponse> getPaymentById(@PathVariable UUID paymentId) {
-        UserDto user = userService.getAuthenticatedUser();
+        UserSummaryDto user = userService.getAuthenticatedUser();
         PaymentDto payment = paymentService.getPaymentById(paymentId, user.getId());
         return ResponseEntity.ok(new ApiResponse("Payment retrieved", payment));
     }
@@ -66,7 +67,7 @@ public class PaymentController {
 
     @DeleteMapping("/{paymentId}/cancel")
     public ResponseEntity<ApiResponse> cancelPayment(@PathVariable UUID paymentId) {
-        UserDto user = userService.getAuthenticatedUser();
+        UserSummaryDto user = userService.getAuthenticatedUser();
         paymentService.cancelPayment(paymentId, user.getId());
         return ResponseEntity.ok(new ApiResponse("Payment cancelled successfully", null));
     }

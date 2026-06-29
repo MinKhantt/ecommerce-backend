@@ -2,6 +2,7 @@ package com.example.ecommercebackend.controller;
 
 import com.example.ecommercebackend.dto.OrderDto;
 import com.example.ecommercebackend.dto.UserDto;
+import com.example.ecommercebackend.dto.UserSummaryDto;
 import com.example.ecommercebackend.dto.request.AddOrderRequest;
 import com.example.ecommercebackend.dto.response.ApiResponse;
 import com.example.ecommercebackend.service.order.IOrderService;
@@ -25,7 +26,7 @@ public class OrderController {
     public ResponseEntity<ApiResponse> createOrder(
             @Valid @RequestBody AddOrderRequest request
             ) {
-        UserDto user = userService.getAuthenticatedUser();
+        UserSummaryDto user = userService.getAuthenticatedUser();
         OrderDto order = orderService.placeOrder(user.getId(), request.getShippingAddress());
         return ResponseEntity.ok(new ApiResponse("Order created successfully", order));
     }
@@ -39,7 +40,7 @@ public class OrderController {
 
     @GetMapping("/{orderId}")
     public ResponseEntity<ApiResponse> getOrderById(@PathVariable UUID orderId) {
-        UserDto user = userService.getAuthenticatedUser();
+        UserSummaryDto user = userService.getAuthenticatedUser();
         OrderDto order = orderService.getOrderById(orderId, user.getId());
         return ResponseEntity.ok(new ApiResponse("Success", order));
     }
@@ -53,14 +54,14 @@ public class OrderController {
 
     @GetMapping("/my-orders")
     public ResponseEntity<ApiResponse> getMyOrders() {
-        UserDto user = userService.getAuthenticatedUser();
+        UserSummaryDto user = userService.getAuthenticatedUser();
         List<OrderDto> order = orderService.getUserOrders(user.getId());
         return ResponseEntity.ok(new ApiResponse("Item order success", order));
     }
 
     @DeleteMapping("/{orderId}")
     public ResponseEntity<ApiResponse> cancelOrder(@PathVariable UUID orderId) {
-        UserDto user = userService.getAuthenticatedUser();
+        UserSummaryDto user = userService.getAuthenticatedUser();
         orderService.cancelOrder(orderId, user.getId());
         return ResponseEntity.ok(new ApiResponse("Order cancelled successfully", null));
     }

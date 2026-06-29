@@ -1,6 +1,7 @@
 package com.example.ecommercebackend.service.user;
 
 import com.example.ecommercebackend.dto.UserDto;
+import com.example.ecommercebackend.dto.UserSummaryDto;
 import com.example.ecommercebackend.dto.request.CreateUserRequest;
 import com.example.ecommercebackend.dto.request.UserUpdateRequest;
 import com.example.ecommercebackend.dto.response.UserListResponse;
@@ -123,13 +124,13 @@ public class UserService implements IUserService{
 
     @Override
     @Cacheable(value = "users", key = "'auth_' + T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication().getName()")
-    public UserDto getAuthenticatedUser() {
+    public UserSummaryDto getAuthenticatedUser() {
         log.info("Authenticating user and fetching from cache");
 
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
         return userRepository.findByEmail(email)
-                .map(userMapper::userToUserDto)
+                .map(userMapper::toUserSummaryDto)
                 .orElseThrow(() -> new ResourceNotFoundException("Authenticated user not found"));
     }
 

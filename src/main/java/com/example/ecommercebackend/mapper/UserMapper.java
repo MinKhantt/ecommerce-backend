@@ -1,6 +1,7 @@
 package com.example.ecommercebackend.mapper;
 
 import com.example.ecommercebackend.dto.UserDto;
+import com.example.ecommercebackend.dto.UserSummaryDto;
 import com.example.ecommercebackend.dto.request.CreateUserRequest;
 import com.example.ecommercebackend.dto.request.UserUpdateRequest;
 import com.example.ecommercebackend.entity.User;
@@ -28,5 +29,9 @@ public class UserMapper {
 
     public User userDtoToUser(UserDto user) {
         return modelMapper.map(user, User.class);
+    }
+
+    public UserSummaryDto toUserSummaryDto(User user) {
+        return modelMapper.map(user, UserSummaryDto.class);
     }
 }
