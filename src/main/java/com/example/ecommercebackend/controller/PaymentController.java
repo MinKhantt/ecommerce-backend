@@ -77,11 +77,7 @@ public class PaymentController {
             @RequestBody String payload,
             @RequestHeader("Stripe-Signature") String sigHeader
     ) {
-        try {
-            paymentService.handleWebhookEvent(payload, sigHeader);
-        } catch (Exception e) {
-            log.error("Stripe webhook error: {}", e.getMessage());
-        }
+        paymentService.handleWebhookEvent(payload, sigHeader);
         return ResponseEntity.ok("");
     }
 }

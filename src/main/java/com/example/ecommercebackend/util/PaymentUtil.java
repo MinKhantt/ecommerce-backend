@@ -180,7 +180,8 @@ public class PaymentUtil {
                         mailUtil.sendOrderConfirmation(order.getUser().getEmail(), ctx);
                     });
         } catch (Exception e) {
-            log.error("Error handling payment_intent.succeeded: {}", e.getMessage());
+            log.error("Error handling payment_intent.succeeded", e);
+            throw new RuntimeException("Webhook processing failed for payment_intent.succeeded", e);
         }
     }
 
@@ -201,7 +202,8 @@ public class PaymentUtil {
                         log.info("Payment failed for order: {}", payment.getOrder().getId());
                     });
         } catch (Exception e) {
-            log.error("Error handling payment_intent.payment_failed: {}", e.getMessage());
+            log.error("Error handling payment_intent.payment_failed", e);
+            throw new RuntimeException("Webhook processing failed for payment_intent.payment_failed", e);
         }
     }
 
@@ -222,7 +224,8 @@ public class PaymentUtil {
                         log.info("Payment requires additional action for order: {}", payment.getOrder().getId());
                     });
         } catch (Exception e) {
-            log.error("Error handling payment_intent.requires_action: {}", e.getMessage());
+            log.error("Error handling payment_intent.requires_action", e);
+            throw new RuntimeException("Webhook processing failed for payment_intent.requires_action", e);
         }
     }
 }
