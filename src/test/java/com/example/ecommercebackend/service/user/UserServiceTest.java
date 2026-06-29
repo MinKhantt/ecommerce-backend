@@ -4,8 +4,10 @@ import com.example.ecommercebackend.dto.UserDto;
 import com.example.ecommercebackend.dto.request.CreateUserRequest;
 import com.example.ecommercebackend.dto.request.UserUpdateRequest;
 import com.example.ecommercebackend.exception.AlreadyExistsException;
+import com.example.ecommercebackend.entity.Role;
 import com.example.ecommercebackend.mapper.UserMapper;
 import com.example.ecommercebackend.entity.User;
+import com.example.ecommercebackend.repository.RoleRepository;
 import com.example.ecommercebackend.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -32,6 +34,10 @@ class UserServiceTest {
     private UserMapper userMapper;
     @Mock
     private PasswordEncoder passwordEncoder;
+    @Mock
+    private RoleRepository roleRepository;
+    @Mock
+    private Role role;
 
     @InjectMocks
     private UserService userService; // this is the class that we want to test
@@ -78,6 +84,8 @@ class UserServiceTest {
             when(userRepository.existsByEmail(testCreateUserRequest.getEmail()))
                     .thenReturn(false);
 
+            when(roleRepository.findByName("ROLE_USER")).thenReturn(role);
+
             when(userMapper.toUser(testCreateUserRequest))
                     .thenReturn(testUser);
 
@@ -97,7 +105,8 @@ class UserServiceTest {
 //            assertEquals(testCreateUserRequest.getEmail(), result.getEmail());
 
             verify(userRepository).existsByEmail(testCreateUserRequest.getEmail());
-            verify(userMapper.toUser(testCreateUserRequest));
+            verify(roleRepository).findByName("ROLE_USER");
+            verify(userMapper).toUser(testCreateUserRequest);
             verify(passwordEncoder).encode(testCreateUserRequest.getPassword());
             verify(userRepository).save(testUser);
             verify(userMapper).userToUserDto(testUser);
@@ -107,13 +116,14 @@ class UserServiceTest {
         void shouldNotCreateUserSuccessfully(){
             // Given
             when(userRepository.existsByEmail(testCreateUserRequest.getEmail())).thenReturn(true);
-//            when(userMapper.toUser(testCreateUserRequest)).thenReturn(testUser);
 
-            // When
-            UserDto result = userService.createUser(testCreateUserRequest);
+            // When & Then
+            AlreadyExistsException exception = assertThrows(
+                    AlreadyExistsException.class,
+                    () -> userService.createUser(testCreateUserRequest)
+            );
 
-            // Then
-            assertNull(result);
+            assertTrue(exception.getMessage().contains("already exists"));
             verify(userRepository).existsByEmail(testCreateUserRequest.getEmail());
             verify(userRepository, never()).save(any());
             verify(passwordEncoder, never()).encode(any());
