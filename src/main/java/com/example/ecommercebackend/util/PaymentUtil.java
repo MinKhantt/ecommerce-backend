@@ -122,13 +122,13 @@ public class PaymentUtil {
 
     private void reduceStock(Order order) {
         order.getOrderItems().forEach(orderItem -> {
-            Product product = orderItem.getProduct();
-            if (product.getInventory() < orderItem.getQuantity()) {
-                log.warn("Insufficient stock for product {} when processing payment for order {}", product.getName(), order.getId());
-                throw new RuntimeException("Insufficient stock for product: " + product.getName());
+            int updated = productRepository.decrementInventory(
+                    orderItem.getProduct().getId(), orderItem.getQuantity());
+            if (updated == 0) {
+                log.warn("Insufficient stock for product {} when processing payment for order {}",
+                        orderItem.getProduct().getName(), order.getId());
+                throw new RuntimeException("Insufficient stock for product: " + orderItem.getProduct().getName());
             }
-            product.setInventory(product.getInventory() - orderItem.getQuantity());
-            productRepository.save(product);
         });
     }
 
