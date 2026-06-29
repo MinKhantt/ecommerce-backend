@@ -38,7 +38,7 @@ public class OrderController {
     }
 
     @GetMapping()
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> getAllOrders() {
         List<OrderDto> orders = orderService.getAllOrders();
         return ResponseEntity.ok(new ApiResponse("Success", orders));
@@ -57,7 +57,7 @@ public class OrderController {
     }
 
     @GetMapping("/admin/{orderId}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> getOrderByIdForAdmin(@PathVariable UUID orderId) {
         try {
             OrderDto order = orderService.getOrderByIdForAdmin(orderId);

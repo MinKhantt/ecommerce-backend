@@ -32,7 +32,7 @@ public class ImageController {
     private final WebClient webClient;
 
     @PostMapping("/upload")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> saveImage(
             @RequestParam List<MultipartFile> file,
             @RequestParam UUID productId
@@ -75,7 +75,7 @@ public class ImageController {
     }
 
     @PutMapping("/{imageId}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> updateImage(
             @PathVariable UUID imageId,
             @RequestParam MultipartFile file
@@ -100,7 +100,7 @@ public class ImageController {
     }
 
     @DeleteMapping("/{imageId}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> deleteImage(
             @PathVariable UUID imageId
     ) {

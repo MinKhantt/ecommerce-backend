@@ -46,7 +46,7 @@ public class ProductController {
         }
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<ApiResponse> createProduct(@RequestBody AddProductRequest request) {
         log.info("Received request to create product: {}", request.getName());
@@ -60,7 +60,7 @@ public class ProductController {
         }
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/product/{productId}")
     public ResponseEntity<ApiResponse> updateProduct(
             @RequestBody ProductUpdateRequest request,
@@ -77,7 +77,7 @@ public class ProductController {
         }
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/product/{productId}")
     public ResponseEntity<ApiResponse> deleteProduct(
             @PathVariable UUID productId

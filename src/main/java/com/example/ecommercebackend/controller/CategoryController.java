@@ -35,7 +35,7 @@ public class CategoryController {
     }
 
     @PostMapping()
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> addCategory(@RequestBody AddCategoryRequest name) {
         try {
             CategoryDto categoryDto = categoryService.addCategory(name);
@@ -69,7 +69,7 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> deleteCategoryById(@PathVariable UUID id) {
         try {
             categoryService.deleteCategoryById(id);
@@ -81,7 +81,7 @@ public class CategoryController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> updateCategoryById(
             @PathVariable UUID id,
             @RequestBody CategoryUpdateRequest request

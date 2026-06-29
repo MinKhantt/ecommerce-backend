@@ -64,14 +64,14 @@ public class PaymentController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> getAllPayments() {
         List<PaymentDto> payments = paymentService.getAllPayments();
         return ResponseEntity.ok(new ApiResponse("Payments retrieved", payments));
     }
 
     @PatchMapping("/{paymentId}/status")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> updatePaymentStatus(
             @PathVariable UUID paymentId,
             @RequestParam String status

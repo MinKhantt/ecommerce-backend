@@ -35,7 +35,7 @@ public class UserController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> getAllUsers() {
         UserListResponse userListResponse = userService.getAllUsers();
         return ResponseEntity.ok(new ApiResponse("User fetched successfully", userListResponse));
@@ -48,14 +48,14 @@ public class UserController {
     }
 
     @PutMapping("/{userId}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> updateUser(@RequestBody UserUpdateRequest request, @PathVariable UUID userId) {
         UserDto userDto = userService.updateUser(request, userId);
         return ResponseEntity.ok(new ApiResponse("User updated successfully", userDto));
     }
 
     @DeleteMapping("/{userId}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse> deleteUser(@PathVariable UUID userId) {
         userService.deleteUser(userId);
         return ResponseEntity.noContent().build();
