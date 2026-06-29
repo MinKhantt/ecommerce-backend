@@ -11,6 +11,9 @@ import com.example.ecommercebackend.service.user.IUserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -50,9 +53,9 @@ public class PaymentController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse> getAllPayments() {
-        List<PaymentDto> payments = paymentService.getAllPayments();
-        return ResponseEntity.ok(new ApiResponse("Payments retrieved", payments));
+    public ResponseEntity<ApiResponse> getAllPayments(
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(new ApiResponse("Payments retrieved", paymentService.getAllPayments(pageable)));
     }
 
     @PatchMapping("/{paymentId}/status")

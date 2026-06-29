@@ -9,6 +9,9 @@ import com.example.ecommercebackend.service.product.IProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -26,10 +29,10 @@ public class ProductController {
     private final IProductService productService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse> getAllProducts() {
-        log.info("Fetching all products");
-        ProductListResponse productListResponse = productService.getAllProducts();
-        return ResponseEntity.ok(new ApiResponse("success", productListResponse));
+    public ResponseEntity<ApiResponse> getAllProducts(
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        log.info("Fetching products page {} with size {}", pageable.getPageNumber(), pageable.getPageSize());
+        return ResponseEntity.ok(new ApiResponse("success", productService.getAllProducts(pageable)));
     }
 
     @GetMapping("/product/{productId}")

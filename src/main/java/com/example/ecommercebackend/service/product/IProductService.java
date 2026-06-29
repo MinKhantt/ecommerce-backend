@@ -3,13 +3,15 @@ package com.example.ecommercebackend.service.product;
 import com.example.ecommercebackend.dto.ProductDto;
 import com.example.ecommercebackend.dto.request.AddProductRequest;
 import com.example.ecommercebackend.dto.request.ProductUpdateRequest;
+import com.example.ecommercebackend.dto.response.PageResponse;
 import com.example.ecommercebackend.dto.response.ProductListResponse;
+import org.springframework.data.domain.Pageable;
 
 import java.util.UUID;
 
 public interface IProductService {
     ProductDto createProduct(AddProductRequest request);
-    ProductListResponse getAllProducts();
+    PageResponse<ProductDto> getAllProducts(Pageable pageable);
     ProductDto getProductById(UUID id);
     ProductDto updateProduct(ProductUpdateRequest request, UUID productId);
     void deleteProductById(UUID id);

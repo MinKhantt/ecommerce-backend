@@ -9,6 +9,9 @@ import com.example.ecommercebackend.service.order.IOrderService;
 import com.example.ecommercebackend.service.user.IUserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -33,9 +36,9 @@ public class OrderController {
 
     @GetMapping()
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse> getAllOrders() {
-        List<OrderDto> orders = orderService.getAllOrders();
-        return ResponseEntity.ok(new ApiResponse("Success", orders));
+    public ResponseEntity<ApiResponse> getAllOrders(
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(new ApiResponse("Success", orderService.getAllOrders(pageable)));
     }
 
     @GetMapping("/{orderId}")

@@ -4,10 +4,12 @@ import com.example.ecommercebackend.dto.UserDto;
 import com.example.ecommercebackend.dto.request.CreateUserRequest;
 import com.example.ecommercebackend.dto.request.UserUpdateRequest;
 import com.example.ecommercebackend.dto.response.ApiResponse;
-import com.example.ecommercebackend.dto.response.UserListResponse;
 import com.example.ecommercebackend.service.user.IUserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -36,9 +38,9 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse> getAllUsers() {
-        UserListResponse userListResponse = userService.getAllUsers();
-        return ResponseEntity.ok(new ApiResponse("User fetched successfully", userListResponse));
+    public ResponseEntity<ApiResponse> getAllUsers(
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(new ApiResponse("User fetched successfully", userService.getAllUsers(pageable)));
     }
 
     @GetMapping("/by-email")

@@ -7,6 +7,9 @@ import com.example.ecommercebackend.dto.response.ApiResponse;
 import com.example.ecommercebackend.service.category.ICategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -21,9 +24,9 @@ public class CategoryController {
     private final ICategoryService categoryService;
 
     @GetMapping()
-    public ResponseEntity<ApiResponse> getAllCategories() {
-        List<CategoryDto> categoriesDto = categoryService.getAllCategories();
-        return ResponseEntity.ok(new ApiResponse("Found!", categoriesDto));
+    public ResponseEntity<ApiResponse> getAllCategories(
+            @PageableDefault(size = 20, sort = "name", direction = Sort.Direction.ASC) Pageable pageable) {
+        return ResponseEntity.ok(new ApiResponse("Found!", categoryService.getAllCategories(pageable)));
     }
 
     @PostMapping()

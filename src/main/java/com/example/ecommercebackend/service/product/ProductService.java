@@ -3,22 +3,26 @@ package com.example.ecommercebackend.service.product;
 import com.example.ecommercebackend.dto.ProductDto;
 import com.example.ecommercebackend.dto.request.AddProductRequest;
 import com.example.ecommercebackend.dto.request.ProductUpdateRequest;
+import com.example.ecommercebackend.dto.response.PageResponse;
 import com.example.ecommercebackend.dto.response.ProductListResponse;
+import com.example.ecommercebackend.entity.Category;
+import com.example.ecommercebackend.entity.Image;
+import com.example.ecommercebackend.entity.Product;
 import com.example.ecommercebackend.exception.AlreadyExistsException;
 import com.example.ecommercebackend.exception.ResourceNotFoundException;
-import com.example.ecommercebackend.entity.Category;
-import com.example.ecommercebackend.entity.Product;
 import com.example.ecommercebackend.mapper.ProductMapper;
 import com.example.ecommercebackend.repository.CategoryRepository;
 import com.example.ecommercebackend.repository.ProductRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
-import org.springframework.transaction.annotation.Transactional;
-import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -60,17 +64,11 @@ public class ProductService implements IProductService {
         return productMapper.ProductToProductDto(savedProduct);
     }
 
-    @Cacheable(value = "productQueries", key = "'all'")
     @Override
-    public ProductListResponse getAllProducts() {
-        log.debug("Retrieving all products");
-        List<ProductDto> products = productRepository.findAll()
-                .stream()
-                .map(productMapper::ProductToProductDto)
-                .toList();
-
-        log.debug("Retrieved {} products", products.size());
-        return new ProductListResponse(products);
+    public PageResponse<ProductDto> getAllProducts(Pageable pageable) {
+        log.debug("Retrieving products page {} with size {}", pageable.getPageNumber(), pageable.getPageSize());
+        return PageResponse.from(productRepository.findAll(pageable)
+                .map(productMapper::ProductToProductDto));
     }
 
     @Override

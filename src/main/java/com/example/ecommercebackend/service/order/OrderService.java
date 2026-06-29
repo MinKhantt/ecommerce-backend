@@ -1,6 +1,7 @@
 package com.example.ecommercebackend.service.order;
 
 import com.example.ecommercebackend.dto.OrderDto;
+import com.example.ecommercebackend.dto.response.PageResponse;
 import com.example.ecommercebackend.enums.OrderStatus;
 import com.example.ecommercebackend.exception.ResourceNotFoundException;
 import com.example.ecommercebackend.entity.Cart;
@@ -15,6 +16,7 @@ import com.example.ecommercebackend.service.cart.CartService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -112,11 +114,9 @@ public class OrderService implements IOrderService{
     }
 
     @Override
-    public List<OrderDto> getAllOrders() {
-        List<Order> orders = orderRepository.findAll();
-        return  orders.stream()
-                .map(orderMapper::toOrderDto)
-                .toList();
+    public PageResponse<OrderDto> getAllOrders(Pageable pageable) {
+        return PageResponse.from(orderRepository.findAll(pageable)
+                .map(orderMapper::toOrderDto));
     }
 
     @Override

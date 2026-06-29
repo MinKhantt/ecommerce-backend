@@ -3,6 +3,7 @@ package com.example.ecommercebackend.service.payment;
 import com.example.ecommercebackend.config.StripeConfig;
 import com.example.ecommercebackend.dto.PaymentDto;
 import com.example.ecommercebackend.dto.request.AddPaymentRequest;
+import com.example.ecommercebackend.dto.response.PageResponse;
 import com.example.ecommercebackend.dto.response.PaymentIntentResponse;
 import com.example.ecommercebackend.entity.Order;
 import com.example.ecommercebackend.entity.Payment;
@@ -22,6 +23,7 @@ import com.stripe.param.PaymentIntentCancelParams;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -68,11 +70,9 @@ public class PaymentService implements IPaymentService {
     }
 
     @Override
-    public List<PaymentDto> getAllPayments() {
-        return paymentRepository.findAll()
-                .stream()
-                .map(paymentMapper::toPaymentDto)
-                .toList();
+    public PageResponse<PaymentDto> getAllPayments(Pageable pageable) {
+        return PageResponse.from(paymentRepository.findAll(pageable)
+                .map(paymentMapper::toPaymentDto));
     }
 
     @Override

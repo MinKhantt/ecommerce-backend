@@ -1,6 +1,8 @@
 package com.example.ecommercebackend.service.order;
 
 import com.example.ecommercebackend.dto.OrderDto;
+import com.example.ecommercebackend.dto.response.PageResponse;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.UUID;
@@ -9,7 +11,7 @@ public interface IOrderService {
 
     OrderDto placeOrder(UUID userId, String shippingAddress);
 
-    List<OrderDto> getAllOrders();
+    PageResponse<OrderDto> getAllOrders(Pageable pageable);
 
     OrderDto getOrderById(UUID orderId, UUID currentUserId);
 

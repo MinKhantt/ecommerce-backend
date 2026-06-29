@@ -4,7 +4,8 @@ import com.example.ecommercebackend.dto.UserDto;
 import com.example.ecommercebackend.dto.UserSummaryDto;
 import com.example.ecommercebackend.dto.request.CreateUserRequest;
 import com.example.ecommercebackend.dto.request.UserUpdateRequest;
-import com.example.ecommercebackend.dto.response.UserListResponse;
+import com.example.ecommercebackend.dto.response.PageResponse;
+import org.springframework.data.domain.Pageable;
 
 import java.util.UUID;
 
@@ -14,7 +15,7 @@ public interface IUserService {
 
     UserDto getUserById(UUID userId);
 
-    UserListResponse getAllUsers();
+    PageResponse<UserDto> getAllUsers(Pageable pageable);
 
     UserDto getUserByEmail(String email);
 

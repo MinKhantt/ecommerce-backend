@@ -2,7 +2,9 @@ package com.example.ecommercebackend.service.payment;
 
 import com.example.ecommercebackend.dto.PaymentDto;
 import com.example.ecommercebackend.dto.request.AddPaymentRequest;
+import com.example.ecommercebackend.dto.response.PageResponse;
 import com.example.ecommercebackend.dto.response.PaymentIntentResponse;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.UUID;
@@ -13,7 +15,7 @@ public interface IPaymentService {
 
     List<PaymentDto> getUserPayments(UUID userId);
 
-    List<PaymentDto> getAllPayments();
+    PageResponse<PaymentDto> getAllPayments(Pageable pageable);
 
     PaymentDto getPaymentById(UUID id, UUID userId);
 

@@ -4,26 +4,29 @@ import com.example.ecommercebackend.dto.UserDto;
 import com.example.ecommercebackend.dto.UserSummaryDto;
 import com.example.ecommercebackend.dto.request.CreateUserRequest;
 import com.example.ecommercebackend.dto.request.UserUpdateRequest;
-import com.example.ecommercebackend.dto.response.UserListResponse;
+import com.example.ecommercebackend.dto.response.PageResponse;
 import com.example.ecommercebackend.entity.Role;
+import com.example.ecommercebackend.entity.User;
 import com.example.ecommercebackend.exception.AlreadyExistsException;
 import com.example.ecommercebackend.exception.ResourceNotFoundException;
 import com.example.ecommercebackend.mapper.UserMapper;
-import com.example.ecommercebackend.entity.User;
 import com.example.ecommercebackend.repository.RoleRepository;
 import com.example.ecommercebackend.repository.UserRepository;
+import com.example.ecommercebackend.service.cart.CartService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -68,16 +71,11 @@ public class UserService implements IUserService{
                 .orElseThrow(() -> new ResourceNotFoundException("User not found!"));
     }
 
-    @Cacheable(value = "users", key = "'all_users'")
     @Override
-    public UserListResponse getAllUsers() {
-        log.info("Fetching all users.");
-        List<UserDto> userList = userRepository.findAll()
-                .stream()
-                .map(userMapper::userToUserDto)
-                .toList();
-
-        return new UserListResponse(userList);
+    public PageResponse<UserDto> getAllUsers(Pageable pageable) {
+        log.info("Fetching users page {} with size {}", pageable.getPageNumber(), pageable.getPageSize());
+        return PageResponse.from(userRepository.findAll(pageable)
+                .map(userMapper::userToUserDto));
     }
 
     @Override

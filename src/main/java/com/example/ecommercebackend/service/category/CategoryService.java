@@ -3,16 +3,18 @@ package com.example.ecommercebackend.service.category;
 import com.example.ecommercebackend.dto.CategoryDto;
 import com.example.ecommercebackend.dto.request.AddCategoryRequest;
 import com.example.ecommercebackend.dto.request.CategoryUpdateRequest;
+import com.example.ecommercebackend.dto.response.PageResponse;
+import com.example.ecommercebackend.entity.Category;
 import com.example.ecommercebackend.exception.AlreadyExistsException;
 import com.example.ecommercebackend.exception.ResourceNotFoundException;
-import com.example.ecommercebackend.entity.Category;
 import com.example.ecommercebackend.mapper.CategoryMapper;
 import com.example.ecommercebackend.repository.CategoryRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -37,11 +39,9 @@ public class CategoryService implements ICategoryService{
     }
 
     @Override
-    public List<CategoryDto> getAllCategories() {
-        return categoryRepository.findAll()
-                .stream()
-                .map(categoryMapper::categoryToCategoryDto)
-                .toList();
+    public PageResponse<CategoryDto> getAllCategories(Pageable pageable) {
+        return PageResponse.from(categoryRepository.findAll(pageable)
+                .map(categoryMapper::categoryToCategoryDto));
     }
 
     @Override
