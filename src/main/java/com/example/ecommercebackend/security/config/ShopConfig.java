@@ -6,6 +6,7 @@ import com.example.ecommercebackend.security.jwt.JwtUtils;
 import com.example.ecommercebackend.security.oauth2.OAuth2SuccessHandler;
 import com.example.ecommercebackend.security.user.ShopUserDetailsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,6 +20,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.List;
@@ -34,6 +36,9 @@ public class ShopConfig {
     private final JwtUtils jwtUtils;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
     private final PasswordEncoder passwordEncoder;
+
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
 
     private static final List<String> SECURE_URLS = List.of(
             "/api/v1/carts/**",
@@ -73,7 +78,11 @@ public class ShopConfig {
                 .oauth2Login(oauth2 -> oauth2
                         .successHandler(oAuth2SuccessHandler)
                         .failureHandler((request, response, exception) -> {
-                            String targetUrl = "http://localhost:5173/login?error=" + exception.getMessage();
+                            String targetUrl = UriComponentsBuilder.fromUriString(normalizedFrontendUrl())
+                                    .path("/login")
+                                    .queryParam("error", exception.getMessage())
+                                    .build()
+                                    .toUriString();
                             response.sendRedirect(targetUrl);
                         })
                 )
@@ -82,7 +91,7 @@ public class ShopConfig {
                 .cors(
                         cors -> cors.configurationSource(request -> {
                             var corsConfig = new CorsConfiguration();
-                            corsConfig.setAllowedOrigins(List.of("http://localhost:5173"));
+                            corsConfig.setAllowedOrigins(List.of(normalizedFrontendUrl()));
                             corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
                             corsConfig.setAllowedHeaders(List.of("*"));
                             return corsConfig;
@@ -90,6 +99,10 @@ public class ShopConfig {
                 );
 
         return httpSecurity.build();
+    }
+
+    private String normalizedFrontendUrl() {
+        return frontendUrl.replaceAll("/+$", "");
     }
 
 }

@@ -3,6 +3,7 @@ package com.example.ecommercebackend.util;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -17,11 +18,15 @@ public class MailUtil {
     private final JavaMailSender mailSender;
     private final ITemplateEngine templateEngine;
 
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
+
     @Async
     public void sendOrderConfirmation(String toEmail, OrderEmailContextUtil ctx) {
         try {
             Context context = new Context();
             context.setVariable("ctx", ctx);
+            context.setVariable("frontendUrl", normalizedFrontendUrl());
 
             String htmlContent = templateEngine.process("emails/order-confirmation", context);
 
@@ -36,5 +41,9 @@ public class MailUtil {
         } catch (Exception e) {
             log.error("Failed to send order confirmation email to {}: {}", toEmail, e.getMessage());
         }
+    }
+
+    private String normalizedFrontendUrl() {
+        return frontendUrl.replaceAll("/+$", "");
     }
 }

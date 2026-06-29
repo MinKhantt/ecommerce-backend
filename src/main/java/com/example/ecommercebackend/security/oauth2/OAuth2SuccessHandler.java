@@ -8,6 +8,7 @@ import com.example.ecommercebackend.security.jwt.JwtUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -17,6 +18,7 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.List;
@@ -34,6 +36,9 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final RoleRepository roleRepository;
     private final StringRedisTemplate redisTemplate;
     private final PasswordEncoder passwordEncoder;
+
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
 
     @Override
     @Transactional
@@ -95,7 +100,15 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-        String targetUrl = "http://localhost:5173/login-success?code=" + code;
+        String targetUrl = UriComponentsBuilder.fromUriString(normalizedFrontendUrl())
+                .path("/login-success")
+                .queryParam("code", code)
+                .build()
+                .toUriString();
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
+    }
+
+    private String normalizedFrontendUrl() {
+        return frontendUrl.replaceAll("/+$", "");
     }
 }
