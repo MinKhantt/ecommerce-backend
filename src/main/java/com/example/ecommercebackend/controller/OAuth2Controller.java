@@ -3,6 +3,7 @@ package com.example.ecommercebackend.controller;
 import com.example.ecommercebackend.dto.response.ApiResponse;
 import com.example.ecommercebackend.dto.response.JwtResponse;
 import com.example.ecommercebackend.security.jwt.JwtUtils;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,7 @@ public class OAuth2Controller {
     private final JwtUtils jwtUtils;
 
     @PostMapping("/oauth2/exchange")
+    @Operation(summary = "Exchange OAuth2 code", description = "Exchange single-use OAuth2 code for JWT access token")
     public ResponseEntity<ApiResponse> exchange(@RequestBody Map<String, String> body) {
         String code = body.get("code");
         if (code == null || code.isBlank()) {

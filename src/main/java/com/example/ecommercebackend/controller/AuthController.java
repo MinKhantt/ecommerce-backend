@@ -9,6 +9,7 @@ import com.example.ecommercebackend.security.jwt.JwtUtils;
 import com.example.ecommercebackend.security.user.ShopUserDetails;
 import com.example.ecommercebackend.security.user.ShopUserDetailsService;
 import com.example.ecommercebackend.service.user.UserService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,12 +39,14 @@ public class AuthController {
     private final StringRedisTemplate redisTemplate;
 
     @PostMapping("/register")
+    @Operation(summary = "Register user", description = "Create a new user account")
     public ResponseEntity<ApiResponse> register(@Valid @RequestBody CreateUserRequest request) {
         UserDto userDto = userService.createUser(request);
         return ResponseEntity.ok(new ApiResponse("Registration Successful", userDto));
     }
 
     @PostMapping("/login")
+    @Operation(summary = "Login user", description = "Authenticate and return JWT access token with refresh cookie")
     public ResponseEntity<ApiResponse> login(@Valid @RequestBody LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -81,6 +84,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
+    @Operation(summary = "Refresh token", description = "Rotate refresh token and return new access token")
     public ResponseEntity<ApiResponse> refresh(
             @CookieValue(name = "refreshToken", required = false) String refreshToken
     ) {
@@ -132,6 +136,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
+    @Operation(summary = "Logout user", description = "Revoke refresh token and clear auth cookie")
     public ResponseEntity<ApiResponse> logout(
             @CookieValue(name = "refreshToken", required = false) String refreshToken
     ) {

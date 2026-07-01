@@ -7,8 +7,10 @@ import com.example.ecommercebackend.dto.request.AddOrderRequest;
 import com.example.ecommercebackend.dto.response.ApiResponse;
 import com.example.ecommercebackend.service.order.IOrderService;
 import com.example.ecommercebackend.service.user.IUserService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -26,6 +28,7 @@ public class OrderController {
     private final IUserService userService;
 
     @PostMapping()
+    @Operation(summary = "Create order", description = "Place a new order from current cart contents")
     public ResponseEntity<ApiResponse> createOrder(
             @Valid @RequestBody AddOrderRequest request
             ) {
@@ -36,12 +39,14 @@ public class OrderController {
 
     @GetMapping()
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Get all orders", description = "Paginated list of all orders, admin only")
     public ResponseEntity<ApiResponse> getAllOrders(
-            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @ParameterObject @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(new ApiResponse("Success", orderService.getAllOrders(pageable)));
     }
 
     @GetMapping("/{orderId}")
+    @Operation(summary = "Get order by ID", description = "Retrieve a user's own order by UUID")
     public ResponseEntity<ApiResponse> getOrderById(@PathVariable UUID orderId) {
         UserSummaryDto user = userService.getAuthenticatedUser();
         OrderDto order = orderService.getOrderById(orderId, user.getId());
@@ -50,12 +55,14 @@ public class OrderController {
 
     @GetMapping("/admin/{orderId}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Get order by ID (admin)", description = "Retrieve any order by UUID, admin only")
     public ResponseEntity<ApiResponse> getOrderByIdForAdmin(@PathVariable UUID orderId) {
         OrderDto order = orderService.getOrderByIdForAdmin(orderId);
         return ResponseEntity.ok(new ApiResponse("Success", order));
     }
 
     @GetMapping("/my-orders")
+    @Operation(summary = "Get my orders", description = "Retrieve the authenticated user's orders")
     public ResponseEntity<ApiResponse> getMyOrders() {
         UserSummaryDto user = userService.getAuthenticatedUser();
         List<OrderDto> order = orderService.getUserOrders(user.getId());
@@ -63,6 +70,7 @@ public class OrderController {
     }
 
     @DeleteMapping("/{orderId}")
+    @Operation(summary = "Cancel order", description = "Cancel a pending order")
     public ResponseEntity<ApiResponse> cancelOrder(@PathVariable UUID orderId) {
         UserSummaryDto user = userService.getAuthenticatedUser();
         orderService.cancelOrder(orderId, user.getId());
@@ -71,6 +79,7 @@ public class OrderController {
 
     @PatchMapping("/{orderId}/order-status")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Update order status", description = "Update order status, admin only")
     public ResponseEntity<ApiResponse> updateOrderStatus(
             @PathVariable UUID orderId,
             @RequestParam String status

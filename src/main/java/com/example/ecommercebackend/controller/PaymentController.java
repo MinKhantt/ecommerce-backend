@@ -8,8 +8,10 @@ import com.example.ecommercebackend.dto.response.ApiResponse;
 import com.example.ecommercebackend.dto.response.PaymentIntentResponse;
 import com.example.ecommercebackend.service.payment.IPaymentService;
 import com.example.ecommercebackend.service.user.IUserService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -31,6 +33,7 @@ public class PaymentController {
     private final IUserService userService;
 
     @PostMapping("/create-intent")
+    @Operation(summary = "Create payment intent", description = "Create a Stripe PaymentIntent or local payment")
     public ResponseEntity<ApiResponse> processPayment(@Valid @RequestBody AddPaymentRequest request) {
         UserSummaryDto user = userService.getAuthenticatedUser();
         PaymentIntentResponse response = paymentService.processPayment(user.getId(), request);
@@ -38,6 +41,7 @@ public class PaymentController {
     }
 
     @GetMapping("/my-payments")
+    @Operation(summary = "Get my payments", description = "Retrieve the authenticated user's payments")
     public ResponseEntity<ApiResponse> getUserPayments() {
         UserSummaryDto user = userService.getAuthenticatedUser();
         List<PaymentDto> payments = paymentService.getUserPayments(user.getId());
@@ -45,6 +49,7 @@ public class PaymentController {
     }
 
     @GetMapping("/{paymentId}")
+    @Operation(summary = "Get payment by ID", description = "Retrieve a single payment by UUID")
     public ResponseEntity<ApiResponse> getPaymentById(@PathVariable UUID paymentId) {
         UserSummaryDto user = userService.getAuthenticatedUser();
         PaymentDto payment = paymentService.getPaymentById(paymentId, user.getId());
@@ -53,13 +58,15 @@ public class PaymentController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Get all payments", description = "Paginated list of all payments, admin only")
     public ResponseEntity<ApiResponse> getAllPayments(
-            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @ParameterObject @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(new ApiResponse("Payments retrieved", paymentService.getAllPayments(pageable)));
     }
 
     @PatchMapping("/{paymentId}/status")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Update payment status", description = "Update payment status, admin only")
     public ResponseEntity<ApiResponse> updatePaymentStatus(
             @PathVariable UUID paymentId,
             @RequestParam String status
@@ -69,6 +76,7 @@ public class PaymentController {
     }
 
     @DeleteMapping("/{paymentId}/cancel")
+    @Operation(summary = "Cancel payment", description = "Cancel a pending payment")
     public ResponseEntity<ApiResponse> cancelPayment(@PathVariable UUID paymentId) {
         UserSummaryDto user = userService.getAuthenticatedUser();
         paymentService.cancelPayment(paymentId, user.getId());
@@ -76,6 +84,7 @@ public class PaymentController {
     }
 
     @PostMapping("/webhook")
+    @Operation(summary = "Stripe webhook", description = "Handle incoming Stripe webhook events")
     public ResponseEntity<String> handleStripeWebhook(
             @RequestBody String payload,
             @RequestHeader("Stripe-Signature") String sigHeader

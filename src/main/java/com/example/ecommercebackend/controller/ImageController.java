@@ -4,6 +4,7 @@ import com.example.ecommercebackend.dto.ImageDto;
 import com.example.ecommercebackend.dto.response.ApiResponse;
 import com.example.ecommercebackend.exception.ResourceNotFoundException;
 import com.example.ecommercebackend.service.image.IImageService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -30,6 +31,7 @@ public class ImageController {
 
     @PostMapping("/upload")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Upload images", description = "Upload one or more images for a product, admin only")
     public ResponseEntity<ApiResponse> saveImage(
             @RequestParam List<MultipartFile> file,
             @RequestParam UUID productId
@@ -40,6 +42,7 @@ public class ImageController {
 
     @GetMapping("/view/{imageId}")
     @Transactional(readOnly = true)
+    @Operation(summary = "View image", description = "Redirect to Cloudinary image URL")
     public RedirectView viewImage(@PathVariable UUID imageId) {
         ImageDto imageDto = imageService.getImageById(imageId);
         return new RedirectView(imageDto.getDownloadUrl(), true);
@@ -47,6 +50,7 @@ public class ImageController {
 
     @GetMapping("/download/{imageId}")
     @Transactional(readOnly = true)
+    @Operation(summary = "Download image", description = "Proxy download image file from Cloudinary")
     public ResponseEntity<Resource> downloadImage(@PathVariable UUID imageId) throws SQLException {
         ImageDto imageDto = imageService.getImageById(imageId);
 
@@ -68,6 +72,7 @@ public class ImageController {
 
     @PutMapping("/{imageId}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Update image", description = "Replace an existing image file, admin only")
     public ResponseEntity<ApiResponse> updateImage(
             @PathVariable UUID imageId,
             @RequestParam MultipartFile file
@@ -83,6 +88,7 @@ public class ImageController {
 
     @DeleteMapping("/{imageId}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Delete image", description = "Delete an image by ID, admin only")
     public ResponseEntity<ApiResponse> deleteImage(
             @PathVariable UUID imageId
     ) {

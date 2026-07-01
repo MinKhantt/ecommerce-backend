@@ -6,9 +6,11 @@ import com.example.ecommercebackend.dto.request.ProductUpdateRequest;
 import com.example.ecommercebackend.dto.response.ApiResponse;
 import com.example.ecommercebackend.dto.response.ProductListResponse;
 import com.example.ecommercebackend.service.product.IProductService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -29,13 +31,15 @@ public class ProductController {
     private final IProductService productService;
 
     @GetMapping
+    @Operation(summary = "Get all products", description = "Paginated list of products")
     public ResponseEntity<ApiResponse> getAllProducts(
-            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @ParameterObject @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         log.info("Fetching products page {} with size {}", pageable.getPageNumber(), pageable.getPageSize());
         return ResponseEntity.ok(new ApiResponse("success", productService.getAllProducts(pageable)));
     }
 
     @GetMapping("/product/{productId}")
+    @Operation(summary = "Get product by ID", description = "Retrieve a single product by UUID")
     public ResponseEntity<ApiResponse> getProductById(@PathVariable UUID productId) {
         log.info("Fetching product with id: {}", productId);
         ProductDto productDto = productService.getProductById(productId);
@@ -44,6 +48,7 @@ public class ProductController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
+    @Operation(summary = "Create product", description = "Create a new product, admin only")
     public ResponseEntity<ApiResponse> createProduct(@Valid @RequestBody AddProductRequest request) {
         log.info("Received request to create product: {}", request.getName());
         ProductDto productDto = productService.createProduct(request);
@@ -52,6 +57,7 @@ public class ProductController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/product/{productId}")
+    @Operation(summary = "Update product", description = "Update product details, admin only")
     public ResponseEntity<ApiResponse> updateProduct(
             @Valid @RequestBody ProductUpdateRequest request,
             @PathVariable UUID productId
@@ -63,6 +69,7 @@ public class ProductController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/product/{productId}")
+    @Operation(summary = "Delete product", description = "Delete a product by ID, admin only")
     public ResponseEntity<ApiResponse> deleteProduct(
             @PathVariable UUID productId
     ) {
@@ -73,6 +80,7 @@ public class ProductController {
 
     // Brand & Name
     @GetMapping("/by-brand-and-name")
+    @Operation(summary = "Get products by brand and name", description = "Filter products by brand and name")
     public ResponseEntity<ApiResponse> getProductByBrandAndName(
             @RequestParam String brand,
             @RequestParam String name
@@ -90,6 +98,7 @@ public class ProductController {
 
     // Category & Brand
     @GetMapping("/by-category-and-brand")
+    @Operation(summary = "Get products by category and brand", description = "Filter products by category name and brand")
     public ResponseEntity<ApiResponse> getProductsByCategoryAndBrand(
             @RequestParam  String category,
             @RequestParam  String brand
@@ -108,6 +117,7 @@ public class ProductController {
 
     // Name
     @GetMapping("/by-name")
+    @Operation(summary = "Get products by name", description = "Filter products by name")
     public ResponseEntity<ApiResponse> getProductByName(
             @RequestParam  String name
     ) {
@@ -125,6 +135,7 @@ public class ProductController {
 
     // Brand
     @GetMapping("/by-brand")
+    @Operation(summary = "Get products by brand", description = "Filter products by brand")
     public ResponseEntity<ApiResponse> getProductsByBrand(
             @RequestParam String brand
     ) {
@@ -142,6 +153,7 @@ public class ProductController {
 
     // Category
     @GetMapping("/by-category")
+    @Operation(summary = "Get products by category", description = "Filter products by category name")
     public ResponseEntity<ApiResponse> getProductsByCategory(
             @RequestParam String category
     ) {
@@ -159,6 +171,7 @@ public class ProductController {
 
     // Brand & Name
     @GetMapping("/count/by-brand-and-name")
+    @Operation(summary = "Count products by brand and name", description = "Count products matching brand and name")
     public ResponseEntity<ApiResponse> countProductsByBrandAndName(
             @RequestParam String brand,
             @RequestParam String name
