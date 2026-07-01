@@ -78,6 +78,7 @@ public class UserService implements IUserService{
     }
 
     @Override
+    @Transactional(readOnly = true)
     @Cacheable(value = "users", key = "'email_' + #email")
     public UserDto getUserByEmail(String email) {
         log.info("Fetching user by email: {}", email);
