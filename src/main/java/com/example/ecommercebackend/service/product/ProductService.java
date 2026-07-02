@@ -6,11 +6,11 @@ import com.example.ecommercebackend.dto.request.ProductUpdateRequest;
 import com.example.ecommercebackend.dto.response.PageResponse;
 import com.example.ecommercebackend.dto.response.ProductListResponse;
 import com.example.ecommercebackend.entity.Category;
-import com.example.ecommercebackend.entity.Image;
 import com.example.ecommercebackend.entity.Product;
 import com.example.ecommercebackend.exception.AlreadyExistsException;
 import com.example.ecommercebackend.exception.ResourceNotFoundException;
 import com.example.ecommercebackend.mapper.ProductMapper;
+import com.example.ecommercebackend.repository.CartItemRepository;
 import com.example.ecommercebackend.repository.CategoryRepository;
 import com.example.ecommercebackend.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.ecommercebackend.entity.CartItem;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,6 +33,7 @@ import java.util.UUID;
 @Transactional(readOnly = true)
 public class ProductService implements IProductService {
 
+    private final CartItemRepository cartItemRepository;
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ProductMapper productMapper;
@@ -125,6 +127,11 @@ public class ProductService implements IProductService {
         productRepository.findById(productId)
                         .ifPresentOrElse(
                                 product -> {
+                                    List<CartItem> cartItems = cartItemRepository.findByProductId(productId);
+                                    if (!cartItems.isEmpty()) {
+                                        cartItemRepository.deleteAll(cartItems);
+                                        log.debug("Deleted {} cart item(s) referencing product id={}", cartItems.size(), productId);
+                                    }
                                     productRepository.delete(product);
                                     log.debug("Deleted product with id={}, name={}, brand={}",
                                             product.getId(), product.getName(), product.getBrand());
