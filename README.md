@@ -207,4 +207,4 @@ Render builds using the Dockerfile — no docker-compose.yml needed on Render.
 
 - This is my Spring Boot learning project.
 - Swagger/OpenAPI docs are available at `/docs`.
-- I plan to add unit tests next.
+- 7 test files: 4 unit (Mockito), 2 static analysis, 1 context load
